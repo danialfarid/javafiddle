@@ -13,17 +13,16 @@
 		<div class="class-sec">
 			<input type="text" data-bind.=".newClassName">
 			<div class="button" data-onclick.onkeyupspace.=".addClass(.newClassName)"></div>
-			</div>
 			<ul class="classes">
 				<li data-for.="clazz in .classes" data-class.="$i==.selIndex ? 'highlight' : ''" data-onclick.onkeyupspace.=".selClass= clazz; .selIndex=$i">
 					<div data-text.="clazz.name"></div>
-					<div class="button" data-onclick.onkeyupspace.=".removeClass(.clazz)">X</div>
+					<div class="button" data-onclick.onkeyupspace.=".removeClass(clazz)">X</div>
 				</li>
 			</ul>
 		</div>
 		<div class="lib-sec">
 			<div class="button" data-onclick.onkeyupspace.=".showAddLib=true">+</div>
-			<div class="add-lib" data-show.=".add-lib">
+			<div class="add-lib" data-show.=".showAddLib" data-init.='.showAddLib = false'>
 				<div class="close" data-onclick.onkeyupspace.=".showAddLib=false">X</div>
 				<input type="text" name="name" data-bind.=".newLibName">
 				<label><input type="radio" name="type" data-bind.=".newLibType" value="maven">Maven</label>
@@ -34,6 +33,7 @@
 			<ul class="libs">
 				<li data-for.="lib in .libs">
 					<div data-text.="lib.name + '(' + lib.version + ')'" data-title.="lib.type + ' - ' + lib.url"></div>
+					<div class="button" data-onclick.onkeyupspace.=".removeLib(lib)">X</div>
 				</li>
 			</ul>
 			<div class="java-src">
