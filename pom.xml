@@ -25,7 +25,7 @@
 				<groupId>ro.isdc.wro4j</groupId>
 				<artifactId>wro4j-maven-plugin</artifactId>
 				<version>1.7.0</version>
-				<executions>
+				<executions> 
 					<execution>
 						<phase>process-resources</phase>
 						<goals>

@@ -183,7 +183,7 @@ $cheeta.model = $cheeta.model || {
 						return (prevProp && prevProp.get && prevProp.get.apply(value)) || model.value;
 					},
 					enumerable: true,
-					configurable: true,
+					configurable: true
 				});
 			} catch(e) { 
 				if (!(e instanceof TypeError)) throw e;
@@ -250,7 +250,7 @@ $cheeta.model = $cheeta.model || {
 $cheeta.refresh = function(modelRef) {
 	var model = $cheeta.model.createOrGetModel(parentModels, modelRef);
 	model.valueChange(eval(model.toExpr()), null);
-}
+};
 
 $cheeta.model.root = $cheeta.model.root || new $cheeta.model.Model(null);
 $cheeta.model.root.value = window;
@@ -598,7 +598,7 @@ $cheeta.XHR = function(target) {
 		return xhr;
 	};
 	var successCallbacks = [], completeCallbacks = [], errorCallbacks = [], stateChangeCallbacks = [];
-	this.successCallbacks = [], this.completeCallbacks = [], this.errorCallbacks = [], this.stateChangeCallbacks = [];
+	this.successCallbacks = []; this.completeCallbacks = []; this.errorCallbacks = []; this.stateChangeCallbacks = [];
 	xhr.onError = function(callback) {
 		errorCallbacks.push(callback);
 		return xhr;
@@ -639,27 +639,36 @@ $cheeta.XHR = function(target) {
 			if (200 <= xhr.status && xhr.status < 300) {
 				for (var i = 0; i < successCallbacks.length; i++) {
 					successCallbacks[i].apply(target, [xhr]);
+				}
+				for (var i = 0; i < _this.successCallbacks.length; i++) {
 					_this.successCallbacks[i].apply(target, [xhr]);
 				}
 			} else {
 				for (var i = 0; i < errorCallbacks.length; i++) {
 					errorCallbacks[i].apply(target, [xhr]);
+				}
+				for (var i = 0; i < _this.errorCallbacks.length; i++) {
 					_this.errorCallbacks[i].apply(target, [xhr]);
 				}
 			}
 			for (var i = 0; i < completeCallbacks.length; i++) {
 				completeCallbacks[i].apply(target, [xhr]);
+			}
+			for (var i = 0; i < _this.completeCallbacks.length; i++) {
 				_this.completeCallbacks[i].apply(target, [xhr]);
 			}
+			
         }
 		for (var i = 0; i < stateChangeCallbacks.length; i++) {
 			stateChangeCallbacks[i].apply(target, [xhr]);
-			_this.stateChangeCallbacks[i].apply(target, [xhr]);
 		}		
+		for (var i = 0; i < _this.stateChangeCallbacks.length; i++) {
+			_this.stateChangeCallbacks[i].apply(target, [xhr]);
+		}
 	};
 	Object.defineProperty(xhr, 'data', {
 		get: function() {
-			return xhr.getResponseHeader('Content-Type') == 'application/json' ? JSON.stringify(xhr.responseText) : xhr.responseText;
+			return xhr.getResponseHeader('Content-Type') === 'application/json' ? JSON.parse(xhr.responseText) : xhr.responseText;
 		}, 
 		enumerable: true,
 		configurable: true
@@ -1027,7 +1036,7 @@ $cheeta.hash = {
 	},
 	get: function(key) {
 		return this.keyval[key || ''];
-	},
+	}
 };
 
 $cheeta.route = $cheeta.route || function(map, hashVal) {

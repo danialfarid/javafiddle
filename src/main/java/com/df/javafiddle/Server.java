@@ -131,7 +131,7 @@ public class Server {
 
 	protected void handleClass(HttpExchange httpExchange, String[] split) throws IOException {
 		Project project = Project.get(split[0]);
-		if (httpExchange.getRequestMethod().equalsIgnoreCase("get")) {
+		if ("GET".equalsIgnoreCase(httpExchange.getRequestMethod())) {
 			writeResponse(httpExchange, project.classesMap.keySet().toString(), "application/json", 200);
 			return;
 		}
@@ -153,9 +153,7 @@ public class Server {
 		Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
 		Project project = Project.get(split[0]);
 		if ("GET".equalsIgnoreCase(httpExchange.getRequestMethod())) {
-			if (split.length < 2) {
-				writeResponse(httpExchange, project.libs.keySet().toString(), "application/json", 200);
-			}
+			writeResponse(httpExchange, project.libs.keySet().toString(), "application/json", 200);
 			return;
 		}
 
@@ -217,12 +215,14 @@ public class Server {
 
 	protected Map<String, String> queryToMap(String query) {
 		Map<String, String> result = new HashMap<String, String>();
-		for (String param : query.split("&")) {
-			String pair[] = param.split("=");
-			if (pair.length > 1) {
-				result.put(pair[0], pair[1]);
-			} else {
-				result.put(pair[0], "");
+		if (query != null) {
+			for (String param : query.split("&")) {
+				String pair[] = param.split("=");
+				if (pair.length > 1) {
+					result.put(pair[0], pair[1]);
+				} else {
+					result.put(pair[0], "");
+				}
 			}
 		}
 		return result;

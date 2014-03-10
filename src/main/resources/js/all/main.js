@@ -1,15 +1,22 @@
 Oo.future(function() {
+	var baseUrl = window.location.href;
 	var path = window.location.pathname + '/'
 	var slashIndex = path.indexOf('/');
 	jf.projectId = path.substring(slashIndex + 1, path.indexOf('/', slashIndex + 1));
 	
 	jf.classes = [];
 	jf.libs = [];
-	new Oo.XHR().open('GET', '/' + jf.projectId + '/class').send().onSuccess(function(xhr) {
-		jf.classes = xhr.data;
+	new Oo.XHR().open('GET', baseUrl + '/' + jf.projectId + '/class').send().onSuccess(function(xhr) {
+		var split = xhr.data.split('\0');
+		for (var i = 0; i < split.length; i = i + 2) {
+			jf.classes.push({"name": split[i], "src": split[i + 1]});
+		}
 	});
-	new Oo.XHR().open('GET', '/' + jf.projectId + '/lib').send().onSuccess(function(xhr) {
-		jf.libs = xhr.data;
+	new Oo.XHR().open('GET', baseUrl + '/' + jf.projectId + '/lib').send().onSuccess(function(xhr) {
+		var split = xhr.data.split('\0');
+		for (var i = 0; i < split.length; i = i + 2) {
+			jf.libs.push({"name": split[i], "url": split[i + 1]});
+		}
 	});
 	
 //	Oo.XHR.onError(function(xhr) {
