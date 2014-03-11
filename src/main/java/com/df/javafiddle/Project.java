@@ -25,6 +25,7 @@ public class Project {
 
 	public Project(String id) {
 		this.id = id;
+		allProjects.put(id, this);
 	}
 
 	public void createLib(Lib lib) {
@@ -41,10 +42,9 @@ public class Project {
 		return libs.get(name);
 	}
 
-	public void createClass(String className) {
-		String bytes = defaultTemplate(className);
-		classesMap.put(className, bytes);
-		classLoader.addClass(className, bytes);
+	public void createClass(String className, String src) {
+		classesMap.put(className, src);
+		classLoader.addClass(className, src);
 	}
 
 	public void updateClass(String name, String bytes) {
@@ -95,33 +95,7 @@ public class Project {
 		return allProjects.get(projectId);
 	}
 
-	public static String create() {
-		StringBuilder rand = new StringBuilder();
-		for (int i = 0; i < 8; i++) {
-			char c;
-			do {
-				c = (char) (int) (Math.random() * 128);
-			} while (!((c > 'a' && c < 'z') || (c > 'A' && c < 'Z') || (c > '0' && c < '9')));
-			rand.append(c);
-		}
-		Project project = new Project(rand.toString());
-		allProjects.put(project.id, project);
-		return project.id;
-	}
-
 	public String getClass(String className) {
 		return classesMap.get(className);
 	}
-
-	protected String defaultTemplate(String className) {
-		String[] split = className.split("\\.");
-		String packageName = "";
-		for (int i = 0; i < split.length - 1; i++) {
-			packageName += (i > 0 ? "." : "") + split[i];
-		}
-		String content = packageName.length() > 0 ? "package " + packageName + "\r\n\r\n" : "";
-		content += "public class " + split[split.length - 1] + "{\r\n\t\r\n}";
-		return content;
-	}
-
 }

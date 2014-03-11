@@ -24,35 +24,26 @@ Oo.future(function() {
 //	}) 
 	
 	jf.addClass = function(name) {
+		jf.removeClass(name);
 		var split = name.split('.');
-		var clazz = {
-				name: name,
-				src: xhr.data
-			};
-		jf.classes.push(clazz);			
-		new Oo.XHR().open('POST', '/' + jf.projectId + '/class/' + name).send().onError(function(xhr) {
-			jf.messages.push('Failed to create class ' + name + '\n' + xhr.data);
-			jf.removeClass(clazz);
+		new Oo.XHR().open('POST', '/' + jf.projectId + '/class/' + name).send().onSuccess(function(xhr) {
+			jf.classes.push({name: name, src: xhr.data});			
 		});
 	};	
 	
-	jf.removeClass = function(clazz) {
+	jf.removeClass = function(name) {
 		for (var i = 0; i < jf.classes.length; i++) {
-			if (jf.classes[i] == clazz) {
-				jf.classes.splice(i, 1);
-				new Oo.XHR().open('DELETE', '/' + jf.projectId + '/class/' + clazz.name).send().onError(function(xhr) {
-					jf.messages.push('Failed to remove class ' + name + '\n' + xhr.data);
-					jf.classes.splice(i, 0, clazz);
+			if (jf.classes[i].name == name) {
+				new Oo.XHR().open('DELETE', '/' + jf.projectId + '/class/' + name).send().onSuccess(function(xhr) {
+					jf.classes.splice(i, 1);
 				});
-				break;
 			}
 		}
 	};
 	
-	jf.addLib = function(name, type, url) {
-		new Oo.XHR().open('POST', '/' + jf.projectId + '/lib/' + name + '?type=' + type).send(url).onError(function(xhr) {
-			jf.messages.push('Failed to add lib ' + type + ': ' + name + ' (' + url + ')\n' + xhr.data);
-			jf.removeLib(name);
+	jf.addLib = function(name, url) {
+		new Oo.XHR().open('POST', '/' + jf.projectId + '/lib/' + name).send(url).onSuccess(function(xhr) {
+			jf.libs.push({name: name, url: url);
 		});
 	};
 	
@@ -60,7 +51,7 @@ Oo.future(function() {
 		for (var i = 0; i < jf.classes.length; i++) {
 			if (jf.classes[i] == clazz) {
 				jf.classes.splice(i, 1);
-				new Oo.XHR().open('DELETE', '/' + jf.projectId + '/lib/' + name).send(url).onError(function(xhr) {
+				new Oo.XHR().open('DELETE', '/' + jf.projectId + '/lib/').send(url).onError(function(xhr) {
 					jf.messages.push('Failed to delete lib ' + name + '\n' + xhr.data);
 					jf.libs.splice(i, 0, lib);
 				});

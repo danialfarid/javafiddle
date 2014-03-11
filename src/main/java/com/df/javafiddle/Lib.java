@@ -25,20 +25,12 @@ public class Lib {
 	public static String MAVEN_URL = "http://repo.maven.apache.org/maven2/";
 
 	public String name;
-	public String type;
 	public URL url;
 
-	public Lib init(String name, String type, String url) {
+	public Lib init(String name, String url) {
 		this.name = name;
-		this.type = type;
 
-		try {
-			this.url = url == null ? null : new URL(url);
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-
-		if (type.equalsIgnoreCase("maven")) {
+		if ("maven".equalsIgnoreCase(url)) {
 			if (name.endsWith(".jar")) {
 				name = name.substring(0, name.length() - 4);
 			}
@@ -51,27 +43,32 @@ public class Lib {
 
 			String basePath = name.replace('.', '/');
 			String mavenUrl = MAVEN_URL + basePath;
-			String filePath = basePath + "/" + version + "/" + name.substring(name.lastIndexOf('.') + 1) + "-"
-					+ version + ".jar";
-			String localFilePath = getLocalMavenRepoPath() + "/" + filePath;
+			String jarName = name.substring(name.lastIndexOf('.') + 1);
 
 			try {
 				if (version.isEmpty()) {
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder db = dbf.newDocumentBuilder();
-					Document doc = db.parse(new URL(mavenUrl + "maven-metadata.xml").openStream());
+					Document doc = db.parse(new URL(mavenUrl + "/maven-metadata.xml").openStream());
 					XPathFactory factory = XPathFactory.newInstance();
 					XPath xpath = factory.newXPath();
 					XPathExpression expr = xpath.compile("/metadata/versioning/versions/version[last()]");
 					NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
 					version = nodes.item(nodes.getLength() - 1).getTextContent();
+					name = name + "#" + version;
+					this.name = name;
 				}
 
-				if (!new File(localFilePath).exists()) {
+				String filePath = basePath + "/" + version + "/" + jarName + "-" + version + ".jar";
+				String localFilePath = getLocalMavenRepoPath() + "/" + filePath;
+
+				File file = new File(localFilePath);
+				if (!file.exists()) {
 					URL website;
 					website = new URL(MAVEN_URL + filePath);
 					ReadableByteChannel rbc;
 					rbc = Channels.newChannel(website.openStream());
+					file.getParentFile().mkdirs();
 					FileOutputStream fos = new FileOutputStream(localFilePath);
 					try {
 						fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -79,7 +76,7 @@ public class Lib {
 						fos.close();
 					}
 				}
-				this.url = new File(localFilePath).toURI().toURL();
+				this.url = file.toURI().toURL();
 
 			} catch (MalformedURLException e) {
 				throw new RuntimeException(e);
@@ -92,12 +89,18 @@ public class Lib {
 			} catch (SAXException e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+			try {
+				this.url = url == null ? null : new URL(url);
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return this;
 	}
 
 	protected String getLocalMavenRepoPath() {
-		return System.getProperty("user.home") + ".m2/repository";
+		return System.getProperty("user.home") + "/.m2/repository";
 	}
 
 }

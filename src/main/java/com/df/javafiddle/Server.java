@@ -1,11 +1,9 @@
 package com.df.javafiddle;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,34 +60,22 @@ public class Server {
 			@Override
 			public void handle(HttpExchange httpExchange) throws IOException {
 				String[] split = httpExchange.getRequestURI().getPath().substring(1).split("/", 0);
-				if (split.length == 1) {
-					if (split[0].isEmpty()) {
-						String projectId = Project.create();
-						httpExchange.getResponseHeaders().add("Location", httpExchange.getRequestURI() + projectId);
-						httpExchange.sendResponseHeaders(302, 0);
-						return;
+				Project project = Project.get(split[0]);
+				if ("POST".equalsIgnoreCase(httpExchange.getRequestMethod()) && split.length == 1) {
+					if (project == null) {
+						project = new Project(split[0]);
 					}
-					String file;
-					if (isProjctId(split[0])) {
-						file = "index.html";
-					} else {
-						file = split[0];
-					}
-					System.out.println(file);
-					InputStream stream = this.getClass().getClassLoader().getResourceAsStream(file);
-					if (stream != null) {
-						writeResponse(httpExchange, IOUtil.readStream(stream), mimeType(file), 200);
-					} else {
-						writeResponse(httpExchange, "", "text/plain", 404);
-					}
+					writeResponse(httpExchange, split[0], "text/plain", 200);
 					return;
 				}
-
 				if (split[1].equals("class")) {
-					handleClass(httpExchange, split);
+					handleClass(httpExchange, project, split);
+					return;
 				} else if (split[1].equals("lib")) {
-					handleLib(httpExchange, split);
+					handleLib(httpExchange, project, split);
+					return;
 				}
+				writeResponse(httpExchange, "", "text/plain", 200);
 			}
 		});
 
@@ -129,50 +115,33 @@ public class Server {
 		server.start();
 	}
 
-	protected void handleClass(HttpExchange httpExchange, String[] split) throws IOException {
-		Project project = Project.get(split[0]);
-		if ("GET".equalsIgnoreCase(httpExchange.getRequestMethod())) {
-			writeResponse(httpExchange, project.classesMap.keySet().toString(), "application/json", 200);
-			return;
-		}
+	protected void handleClass(HttpExchange httpExchange, Project project, String[] split) throws IOException {
 		String className = split[2];
 
-		String source = project.getClass(className);
-
 		if ("POST".equalsIgnoreCase(httpExchange.getRequestMethod())) {
-			project.createClass(className);
+			project.createClass(className, IOUtil.readStream(httpExchange.getRequestBody()));
 		} else if ("PUT".equalsIgnoreCase(httpExchange.getRequestMethod())) {
 			project.updateClass(className, IOUtil.readStream(httpExchange.getRequestBody()));
 		} else if ("DELETE".equalsIgnoreCase(httpExchange.getRequestMethod())) {
 			project.removeClass(className);
 		}
-		writeResponse(httpExchange, source, "text/x-java-source,java", 200);
+		writeResponse(httpExchange, className, "text/plain", 200);
 	}
 
-	protected void handleLib(HttpExchange httpExchange, String[] split) throws IOException {
-		Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
-		Project project = Project.get(split[0]);
-		if ("GET".equalsIgnoreCase(httpExchange.getRequestMethod())) {
-			writeResponse(httpExchange, project.libs.keySet().toString(), "application/json", 200);
-			return;
-		}
+	protected void handleLib(HttpExchange httpExchange, Project project, String[] split) throws IOException {
+		String content = IOUtil.readStream(httpExchange.getRequestBody());
+		String[] nameUrl = content.split((char) 0 + "", -1);
 
-		String name = split.length > 2 ? split[2] : null;
-		String type = params.get("type");
-		String url = IOUtil.readStream(httpExchange.getRequestBody());
-
-		Lib lib = project.getLib(name);
-
-		if (lib == null) {
-			lib = new Lib().init(name, type, url);
-		}
+		String result = nameUrl[0];
 
 		if ("POST".equalsIgnoreCase(httpExchange.getRequestMethod())) {
+			Lib lib = new Lib().init(nameUrl[0], nameUrl[1]);
 			project.createLib(lib);
+			result = lib.name;
 		} else if ("DELETE".equalsIgnoreCase(httpExchange.getRequestMethod())) {
-			project.removeClass(name);
+			project.removeLib(nameUrl[0]);
 		}
-		writeResponse(httpExchange, lib.url.toString(), "text/plain", 200);
+		writeResponse(httpExchange, result, "text/plain", 200);
 	}
 
 	protected boolean isProjctId(String str) {
@@ -195,10 +164,11 @@ public class Server {
 			throws IOException {
 		byte[] bytes = content.getBytes("UTF-8");
 		httpExchange.getResponseHeaders().add("Content-Type", contentType);
-		List<String> origin = httpExchange.getRequestHeaders().get("Origin");
-		if (origin != null && !origin.isEmpty()) {
-			httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", origin.get(0));
-		}
+		httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:8888");
+		httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS'");
+		// $response->header('Access-Control-Allow-Headers', 'Content-Type,
+		// X-Requested-With, X-authentication, X-client');
+
 		httpExchange.sendResponseHeaders(code, bytes.length);
 		OutputStream os = httpExchange.getResponseBody();
 		try {
