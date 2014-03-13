@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -13,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Project {
 
 	public static ConcurrentHashMap<String, Project> allProjects = new ConcurrentHashMap<String, Project>();
+
+	public static String MAIN_CLASS_NAME = "Main";
 
 	public String id;
 	public Map<String, Lib> libs = new ConcurrentHashMap<String, Lib>();
@@ -97,5 +100,23 @@ public class Project {
 
 	public String getClass(String className) {
 		return classesMap.get(className);
+	}
+
+	public void run() {
+		try {
+			Class.forName(MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

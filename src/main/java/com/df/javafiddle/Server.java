@@ -2,6 +2,8 @@ package com.df.javafiddle;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,6 +76,14 @@ public class Server {
 				} else if (split[1].equals("lib")) {
 					handleLib(httpExchange, project, split);
 					return;
+				} else if (split[1].equals("run")) {
+					try {
+						project.run();
+					} catch (Throwable e) {
+						StringWriter stringWriter = new StringWriter();
+						e.getCause().printStackTrace(new PrintWriter(stringWriter));
+						writeResponse(httpExchange, stringWriter.toString(), "text/plain", 200);
+					}
 				}
 				writeResponse(httpExchange, "", "text/plain", 200);
 			}
