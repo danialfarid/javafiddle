@@ -104,7 +104,7 @@ public class Project {
 
 	public void run() {
 		try {
-			Class.forName(MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
+			classLoader.loadClass(MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (IllegalArgumentException e) {

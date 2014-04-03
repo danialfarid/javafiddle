@@ -80,6 +80,7 @@ public class Server {
 					try {
 						project.run();
 					} catch (Throwable e) {
+						logger.log(Level.SEVERE, "", e);
 						StringWriter stringWriter = new StringWriter();
 						e.getCause().printStackTrace(new PrintWriter(stringWriter));
 						writeResponse(httpExchange, stringWriter.toString(), "text/plain", 200);
