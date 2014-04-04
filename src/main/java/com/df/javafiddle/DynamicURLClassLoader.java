@@ -12,9 +12,11 @@ public class DynamicURLClassLoader extends URLClassLoader {
 
 	Compiler compiler;
 	ByteArrayOutputStream logStream = new ByteArrayOutputStream();
+	protected final String projectId;
 
-	public DynamicURLClassLoader(URL[] urls, ClassLoader parent) {
+	public DynamicURLClassLoader(URL[] urls, ClassLoader parent, String projectId) {
 		super(urls, parent);
+		this.projectId = projectId;
 		compiler = new Compiler().init(this);
 	}
 
@@ -27,7 +29,7 @@ public class DynamicURLClassLoader extends URLClassLoader {
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		String source;
 		if ((source = newClassesMap.remove(name)) != null) {
-			return compiler.compile(name, source);
+			return compiler.compile(name, source, projectId);
 			// return Class.forName(name);
 			// return defineClass(name, , 0, bytes.length);
 		} else if (removedClasses.containsKey(name)) {

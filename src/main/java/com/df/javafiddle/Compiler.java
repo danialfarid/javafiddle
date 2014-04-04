@@ -22,7 +22,6 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 public class Compiler {
@@ -30,7 +29,7 @@ public class Compiler {
 
 	protected JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-	public String outputPath = System.getProperty("java.io.tmpdir") + "/" + "javafiddle" + "/";
+	public String outputPath = System.getProperty("java.io.tmpdir") + File.separator + "javafiddle" + File.separator;
 
 	public DynamicURLClassLoader classLoader;
 
@@ -39,7 +38,7 @@ public class Compiler {
 		return this;
 	}
 
-	public Class<?> compile(String projectName, String className, final String source) {
+	public Class<?> compile(String className, final String source, String projectId) {
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
 		StringWriter writer = new StringWriter();
@@ -51,8 +50,15 @@ public class Compiler {
 		// We get an instance of JavaCompiler. Then we create a file manager
 		// (our custom implementation of it)
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-		fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(new File(outputPath + projectName + "/"));
+		String projectFolder = outputPath + projectId + File.separator;
+		ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null),
+				projectFolder);
+		// try {
+		// fileManager.setLocation(StandardLocation.CLASS_OUTPUT,
+		// Arrays.asList(new File(projectFolder)));
+		// } catch (IOException e1) {
+		// throw new RuntimeException(e);
+		// }
 		// Dynamic compiling requires specifying a list of "files" to compile.
 		// In our case this is a list
 		// containing one "file" which is in our case our own implementation
@@ -61,7 +67,8 @@ public class Compiler {
 		jfiles.add(new CharSequenceJavaFileObject(className, src));
 
 		List<String> optionList = new ArrayList<String>();
-		optionList.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + ""));
+		optionList.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + File.pathSeparatorChar
+				+ projectFolder));
 
 		// We specify a task to the compiler. Compiler should use our file
 		// manager and our list of "files".
@@ -131,13 +138,25 @@ public class Compiler {
 	}
 
 	public static class JavaClassObject extends SimpleJavaFileObject {
+		protected final URI pathURI;
 
 		/**
 		 * Byte code created by the compiler will be stored in this
 		 * ByteArrayOutputStream so that we can later get the byte array out of
 		 * it and put it in the memory as an instance of our class.
 		 */
-		protected final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		protected final ByteArrayOutputStream bos = new ByteArrayOutputStream() {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				PrintWriter writer = new PrintWriter(new File(pathURI));
+				try {
+					writer.print(this.toString());
+				} finally {
+					writer.close();
+				}
+			};
+		};
 
 		/**
 		 * Registers the compiled class object under URI containing the class
@@ -148,8 +167,10 @@ public class Compiler {
 		 * @param kind
 		 *            Kind of the data. It will be CLASS in our case
 		 */
-		public JavaClassObject(String name, Kind kind) {
-			super(URI.create("string:///" + name.replace('.', '/') + kind.extension), kind);
+		public JavaClassObject(String name, Kind kind, String path) {
+			super(URI.create("string:///" + name.replace('.', File.separatorChar) + kind.extension), kind);
+			this.pathURI = URI.create("file:///" + path + File.separator + name.replace('.', File.separatorChar)
+					+ kind.extension);
 		}
 
 		/**
@@ -179,6 +200,7 @@ public class Compiler {
 		 * our class
 		 */
 		private JavaClassObject jclassObject;
+		protected final String classOutputPath;
 
 		/**
 		 * Will initialize the manager with the specified standard java file
@@ -186,8 +208,9 @@ public class Compiler {
 		 * 
 		 * @param standardManger
 		 */
-		public ClassFileManager(StandardJavaFileManager standardManager) {
+		public ClassFileManager(StandardJavaFileManager standardManager, String classOutputPath) {
 			super(standardManager);
+			this.classOutputPath = classOutputPath;
 		}
 
 		/**
@@ -215,7 +238,7 @@ public class Compiler {
 		@Override
 		public JavaFileObject getJavaFileForOutput(Location location, String className,
 				javax.tools.JavaFileObject.Kind kind, FileObject sibling) throws IOException {
-			jclassObject = new JavaClassObject(className, kind);
+			jclassObject = new JavaClassObject(className, kind, classOutputPath);
 			return jclassObject;
 		}
 	}
