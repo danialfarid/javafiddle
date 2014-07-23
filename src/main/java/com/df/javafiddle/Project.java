@@ -21,13 +21,14 @@ public class Project {
 	public Map<String, Lib> libs = new ConcurrentHashMap<String, Lib>();
 	public Map<String, String> classesMap = new ConcurrentHashMap<String, String>();
 
-	public DynamicURLClassLoader classLoader = new DynamicURLClassLoader(new URL[] {}, Project.class.getClassLoader());
+	public DynamicURLClassLoader classLoader;
 
 	public Project() {
 	}
 
 	public Project(String id) {
 		this.id = id;
+		classLoader = new DynamicURLClassLoader(new URL[] {}, Project.class.getClassLoader(), id);
 		allProjects.put(id, this);
 	}
 
@@ -104,7 +105,7 @@ public class Project {
 
 	public void run() {
 		try {
-			Class.forName(MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
+			classLoader.loadClass(MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (IllegalArgumentException e) {
