@@ -10,6 +10,7 @@ import java.net.URI;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +52,7 @@ public class Compiler {
 		// (our custom implementation of it)
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		String projectFolder = outputPath + projectId + File.separator;
+		new File(projectFolder).mkdirs();
 		ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null),
 				projectFolder);
 		// try {
@@ -84,19 +86,22 @@ public class Compiler {
 				return null;
 			}
 		} else {
-			StringBuilder err = new StringBuilder("Compile error: ");
-			for (Diagnostic<?> diagnostic : diagnostics.getDiagnostics()) {
-				err.append(diagnostic.getCode());
-				err.append("line: " + diagnostic.getLineNumber());
-				err.append(diagnostic.getKind());
-				err.append(" at position: " + diagnostic.getPosition());
-				err.append(" from: " + diagnostic.getStartPosition());
-				err.append(" to: " + diagnostic.getEndPosition());
-				err.append(" source: " + diagnostic.getSource());
-				err.append(" reason: " + diagnostic.getMessage(null));
+			StringBuilder err = new StringBuilder("[");
+			Iterator<Diagnostic<? extends JavaFileObject>> it = diagnostics.getDiagnostics().iterator();
+			while (true) {
+				if (!it.hasNext())
+					break;
+				Diagnostic<? extends javax.tools.JavaFileObject> diagnostic = it.next();
+				err.append("{");
+				err.append("\"reason\": \"" + diagnostic.getMessage(null) + "\",");
+				err.append("\"line\": \"" + diagnostic.getLineNumber() + "\",");
+				err.append("\"from\": \"" + diagnostic.getStartPosition() + "\",");
+				err.append("\"to\": \"" + diagnostic.getEndPosition() + "\"}");
+				if (it.hasNext())
+					err.append(",");
 			}
-			logger.severe(err.toString());
-			return null;
+			err.append("]");
+			throw new CompilationErrorException(className, err.toString());
 		}
 	}
 
@@ -108,9 +113,8 @@ public class Compiler {
 		private final CharSequence content;
 
 		/**
-		 * This constructor will store the source code in the internal "content"
-		 * variable and register it as a source code, using a URI containing the
-		 * class full name
+		 * This constructor will store the source code in the internal "content" variable and register it as a
+		 * source code, using a URI containing the class full name
 		 * 
 		 * @param className
 		 *            name of the public class in the source code
@@ -123,8 +127,7 @@ public class Compiler {
 		}
 
 		/**
-		 * Answers the CharSequence to be compiled. It will give the source code
-		 * stored in variable "content"
+		 * Answers the CharSequence to be compiled. It will give the source code stored in variable "content"
 		 */
 		@Override
 		public CharSequence getCharContent(boolean ignoreEncodingErrors) {
@@ -141,9 +144,8 @@ public class Compiler {
 		protected final URI pathURI;
 
 		/**
-		 * Byte code created by the compiler will be stored in this
-		 * ByteArrayOutputStream so that we can later get the byte array out of
-		 * it and put it in the memory as an instance of our class.
+		 * Byte code created by the compiler will be stored in this ByteArrayOutputStream so that we can later
+		 * get the byte array out of it and put it in the memory as an instance of our class.
 		 */
 		protected final ByteArrayOutputStream bos = new ByteArrayOutputStream() {
 			@Override
@@ -159,8 +161,7 @@ public class Compiler {
 		};
 
 		/**
-		 * Registers the compiled class object under URI containing the class
-		 * full name
+		 * Registers the compiled class object under URI containing the class full name
 		 * 
 		 * @param name
 		 *            Full name of the compiled class
@@ -174,8 +175,8 @@ public class Compiler {
 		}
 
 		/**
-		 * Will be used by our file manager to get the byte code that can be put
-		 * into memory to instantiate our class
+		 * Will be used by our file manager to get the byte code that can be put into memory to instantiate
+		 * our class
 		 * 
 		 * @return compiled byte code
 		 */
@@ -184,9 +185,8 @@ public class Compiler {
 		}
 
 		/**
-		 * Will provide the compiler with an output stream that leads to our
-		 * byte array. This way the compiler will write everything into the byte
-		 * array that we will instantiate later
+		 * Will provide the compiler with an output stream that leads to our byte array. This way the compiler
+		 * will write everything into the byte array that we will instantiate later
 		 */
 		@Override
 		public OutputStream openOutputStream() throws IOException {
@@ -196,15 +196,13 @@ public class Compiler {
 
 	public class ClassFileManager extends ForwardingJavaFileManager<StandardJavaFileManager> {
 		/**
-		 * Instance of JavaClassObject that will store the compiled bytecode of
-		 * our class
+		 * Instance of JavaClassObject that will store the compiled bytecode of our class
 		 */
 		private JavaClassObject jclassObject;
 		protected final String classOutputPath;
 
 		/**
-		 * Will initialize the manager with the specified standard java file
-		 * manager
+		 * Will initialize the manager with the specified standard java file manager
 		 * 
 		 * @param standardManger
 		 */
@@ -214,9 +212,8 @@ public class Compiler {
 		}
 
 		/**
-		 * Will be used by us to get the class loader for our compiled class. It
-		 * creates an anonymous class extending the SecureClassLoader which uses
-		 * the byte code created by the compiler and stored in the
+		 * Will be used by us to get the class loader for our compiled class. It creates an anonymous class
+		 * extending the SecureClassLoader which uses the byte code created by the compiler and stored in the
 		 * JavaClassObject, and returns the Class for it
 		 */
 		@Override
@@ -232,8 +229,8 @@ public class Compiler {
 		}
 
 		/**
-		 * Gives the compiler an instance of the JavaClassObject so that the
-		 * compiler can write the byte code into it.
+		 * Gives the compiler an instance of the JavaClassObject so that the compiler can write the byte code
+		 * into it.
 		 */
 		@Override
 		public JavaFileObject getJavaFileForOutput(Location location, String className,

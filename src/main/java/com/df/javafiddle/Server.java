@@ -1,12 +1,16 @@
 package com.df.javafiddle;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +28,39 @@ public class Server {
 	protected HttpServer server;
 
 	public String loadURL;
+	
+	protected OutStream out = new OutStream().init(System.out);
+	protected OutStream err = new OutStream().init(System.err);
+	
+	class OutStream extends ByteArrayOutputStream {
+		public PrintStream stream;
+		public OutStream init(PrintStream printStream) {
+			this.stream = printStream;
+			return this;
+		}
+		@Override
+		public synchronized void write(byte[] b, int off, int len) {
+			stream.write(b, off, len);
+			super.write(b, off, len);
+			this.notifyAll();
+		}
+		public synchronized String poll() {
+			try {
+				if (this.size() > 0) {
+					String string = this.toString("UTF-8");
+					this.reset();
+					return string;
+				} else {
+					this.wait();
+					return poll();
+				}
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
 
 	protected void createContext(String context, final HttpHandler httpHandler) {
 		server.createContext(context, new HttpHandler() {
@@ -49,14 +86,12 @@ public class Server {
 	// }
 
 	public void start(int port) throws IOException {
+		System.setOut(new PrintStream(out));
+		System.setErr(new PrintStream(err));
+		System.out.println("ddddddddddddd");
+		System.err.println("aaaaaaaaaaaa");
 		server = HttpServer.create(new InetSocketAddress(port), 0);
-
-		createContext("/base", new HttpHandler() {
-			@Override
-			public void handle(HttpExchange httpExchange) throws IOException {
-				writeResponse(httpExchange, loadURL, "text/plain", 200);
-			}
-		});
+		server.setExecutor(Executors.newCachedThreadPool());
 
 		createContext("/", new HttpHandler() {
 			@Override
@@ -70,58 +105,33 @@ public class Server {
 					writeResponse(httpExchange, split[0], "text/plain", 200);
 					return;
 				}
-				if (split[1].equals("class")) {
+				String path1 = split[1];
+				if (path1.equals("class")) {
 					handleClass(httpExchange, project, split);
 					return;
-				} else if (split[1].equals("lib")) {
+				} else if (path1.equals("lib")) {
 					handleLib(httpExchange, project, split);
 					return;
-				} else if (split[1].equals("run")) {
+				} else if (path1.equals("run")) {
 					try {
 						project.run();
+					} catch (CompilationErrorException e) {
+						writeResponse(httpExchange, e.errorJson, "application/json", 400);
 					} catch (Throwable e) {
 						logger.log(Level.SEVERE, "", e);
 						StringWriter stringWriter = new StringWriter();
-						e.getCause().printStackTrace(new PrintWriter(stringWriter));
-						writeResponse(httpExchange, stringWriter.toString(), "text/plain", 200);
+						(e.getCause() != null ? e.getCause() : e).printStackTrace(new PrintWriter(stringWriter));
+						writeResponse(httpExchange, stringWriter.toString(), "text/plain", 500);
 					}
+				} else if (path1.equals("out")) {
+					writeResponse(httpExchange, out.poll(), "text/plain", 200);
+				} else if (path1.equals("err")) {
+					writeResponse(httpExchange, err.poll(), "text/plain", 200);
 				}
 				writeResponse(httpExchange, "", "text/plain", 200);
 			}
 		});
 
-		/*****
-		 * final ReentrantLock lock = new ReentrantLock(); final Condition
-		 * condition = lock.newCondition();
-		 * Loader.INSTANCE.addScriptUpdateListener(new ScriptUpdateListener() {
-		 * 
-		 * @Override public void onUpdate(String script) { lock.lock(); try {
-		 *           updatedScript.append(script); condition.signalAll(); }
-		 *           finally { lock.unlock(); } } });
-		 * 
-		 *           createContext("/l", new HttpHandler() { Thread lastThread =
-		 *           null;
-		 * @Override public void handle(final HttpExchange httpExchange) throws
-		 *           IOException {
-		 *           System.out.println(System.currentTimeMillis()); lastThread
-		 *           = new Thread(new Runnable() {
-		 * @Override public void run() { try { if (getLastScript().length() ==
-		 *           0) { lock.lock(); try { try { condition.await(30,
-		 *           TimeUnit.SECONDS); } catch (InterruptedException e) { //
-		 *           ignore } } finally { lock.unlock(); } }
-		 *           httpExchange.getResponseHeaders().add("Content-Type",
-		 *           "text/javascript"); String script = getLastScript(); byte[]
-		 *           result = script.getBytes("UTF-8"); try {
-		 *           httpExchange.sendResponseHeaders(200, result.length);
-		 *           writeResponse(httpExchange, result); } catch (IOException
-		 *           e) { throw new RuntimeException(e); } } catch (Throwable e)
-		 *           { logger.log(Level.SEVERE, "Server error", e); try {
-		 *           writeError(httpExchange, e); } catch (IOException e1) {
-		 *           throw new RuntimeException(e); } } }
-		 * 
-		 *           }); lastThread.start(); } });
-		 *****/
-		server.setExecutor(null);
 		// creates a default executor
 		server.start();
 	}
