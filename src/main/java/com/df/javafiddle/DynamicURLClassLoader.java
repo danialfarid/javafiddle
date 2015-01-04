@@ -5,6 +5,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.df.javafiddle.compiler.CompilationErrorException;
+import com.df.javafiddle.compiler.Compiler;
+
 public class DynamicURLClassLoader extends URLClassLoader {
 
 	protected ConcurrentHashMap<String, String> newClassesMap = new ConcurrentHashMap<String, String>();
@@ -38,6 +41,8 @@ public class DynamicURLClassLoader extends URLClassLoader {
 				return compiled;
 			} catch (CompilationErrorException e) {
 				newClassesMap.put(name, source);
+				System.err.println(e.className);
+				System.err.println(e.errorJson);
 			}
 			// return Class.forName(name);
 			// return defineClass(name, , 0, bytes.length);

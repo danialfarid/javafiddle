@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.df.javafiddle.compiler.CompilationErrorException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -88,8 +89,6 @@ public class Server {
 	public void start(int port) throws IOException {
 		System.setOut(new PrintStream(out));
 		System.setErr(new PrintStream(err));
-		System.out.println("ddddddddddddd");
-		System.err.println("aaaaaaaaaaaa");
 		server = HttpServer.create(new InetSocketAddress(port), 0);
 		server.setExecutor(Executors.newCachedThreadPool());
 

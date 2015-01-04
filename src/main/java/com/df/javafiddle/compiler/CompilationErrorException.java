@@ -1,4 +1,4 @@
-package com.df.javafiddle;
+package com.df.javafiddle.compiler;
 
 public class CompilationErrorException extends RuntimeException {
 	public String className;

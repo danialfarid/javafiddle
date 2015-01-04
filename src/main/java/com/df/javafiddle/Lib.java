@@ -1,12 +1,8 @@
 package com.df.javafiddle;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,6 +18,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class Lib {
+	private static final String DEFAULT_LIB_DOWNLOAD_FOLDER = "javafiddle-libs";
+
 	public static String MAVEN_URL = "http://repo.maven.apache.org/maven2/";
 
 	public String name;
@@ -62,21 +60,8 @@ public class Lib {
 				String filePath = basePath + "/" + version + "/" + jarName + "-" + version + ".jar";
 				String localFilePath = getLocalMavenRepoPath() + "/" + filePath;
 
-				File file = new File(localFilePath);
-				if (!file.exists()) {
-					URL website;
-					website = new URL(MAVEN_URL + filePath);
-					ReadableByteChannel rbc;
-					rbc = Channels.newChannel(website.openStream());
-					file.getParentFile().mkdirs();
-					FileOutputStream fos = new FileOutputStream(localFilePath);
-					try {
-						fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-					} finally {
-						fos.close();
-					}
-				}
-				this.url = file.toURI().toURL();
+				IOUtil.downloadUrlToFile(new URL(MAVEN_URL + filePath), localFilePath);
+				this.url = new URL(localFilePath);
 
 			} catch (MalformedURLException e) {
 				throw new RuntimeException(e);
@@ -92,7 +77,12 @@ public class Lib {
 		} else {
 			try {
 				this.url = url == null ? null : new URL(url);
+				String fileName = IOUtil.getTempFolderForId(DEFAULT_LIB_DOWNLOAD_FOLDER) + 
+						StringUtil.removeNoneAlphanumeric(url, name);
+				IOUtil.downloadUrlToFile(this.url, fileName);
 			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
