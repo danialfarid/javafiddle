@@ -20,9 +20,9 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 @SuppressWarnings("restriction")
-public class Server {
-	public static Server INSTANCE = new Server();
-	protected Logger logger = Logger.getLogger(Server.class.getName());
+public class JFServer {
+	public static JFServer INSTANCE = new JFServer();
+	protected Logger logger = Logger.getLogger(JFServer.class.getName());
 
 	public StringBuffer updatedScript = new StringBuffer();
 

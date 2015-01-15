@@ -199,7 +199,7 @@ $cheeta.model = $cheeta.model || {
 		this.bindModelChange = function(elem, attrName, onChange) {
 			if (onChange) {
 				this.bindings.push({elem: elem, attrName: attrName});
-				console.log('binding: ' + this.toExpr(), elem, attrName, this.bindings.length);
+//				console.log('binding: ' + this.toExpr(), elem, attrName, this.bindings.length);
 				elem.addEventListener('$cheetaMC-' + attrName + '-' + this.toExpr(), onChange, false);
 				if (this.value != null) {
 					$cheeta.future.evals.push([onChange, {type: '$cheetaMC-' + attrName + '-' + this.toExpr(), 'detail': 
@@ -215,12 +215,12 @@ $cheeta.model = $cheeta.model || {
 					this.bindings.splice(i, 1);
 				}
 			}
-			console.log('unbind: ', this.toExpr(), elem, attrName, this.bindings.length);
+//			console.log('unbind: ', this.toExpr(), elem, attrName, this.bindings.length);
 		};
 		this.valueChange = function(val, oldVal) {
 			if (val != oldVal) {
 				for (var i = 0; i < this.bindings.length; i++) {
-					console.log('dispatching: ' , this.toExpr(), i, this.bindings[i].elem, this.bindings[i].attrName, val);
+//					console.log('dispatching: ' , this.toExpr(), i, this.bindings[i].elem, this.bindings[i].attrName, val);
 					this.bindings[i].elem.dispatchEvent(new CustomEvent('$cheetaMC-' + this.bindings[i].attrName + '-' + this.toExpr(), 
 							{'detail': {value: val, oldValue: oldVal, target: this}}));
 				}
@@ -368,6 +368,7 @@ $cheeta.model = $cheeta.model || {
 			name = parentModels[0].names[0] + name;
 		}
 		
+//		var split = name.split(/ *\. *| *(?=\[) */g);
 		var split = name.split(/ *\. *| *\[ */g);
 		var rootName = split[0];
 		var parentModel = $cheeta.model.root;
@@ -381,6 +382,9 @@ $cheeta.model = $cheeta.model || {
 		for (var i = parentModel === $cheeta.model.root ? 0 : 1; i < split.length; i++) {
 			var hasSpecialChar = false, modelName = split[i];
 			if (modelName.search(/\( *$/) > -1) {
+				if (modelName.search(/\] */) > -1) {
+					modelName = '[' + modelName;
+				}
 				return [parentModel, modelName];
 			} else if (modelName.search(/\] *$/) > -1) {
 				modelName = modelName.replace(/^ *'|'? *] *$/g, '');
@@ -409,6 +413,7 @@ $cheeta.watch = function(modelExpr, fn) {
 	elem.setAttribute('watch.', modelExpr);
 	elem.setAttribute('onwatch.', '$cheeta.watchFns[' + ($cheeta.watchFns.length - 1) + ']()');
 	document.body.appendChild(elem);
+	$cheeta.compiler.compile([$cheeta.model.root], elem);
 };
 
 $cheeta.future = function(future) {
@@ -507,10 +512,12 @@ $cheeta.Directive = function(name, model) {
 		resolvedVal = this.parseModelVars((attrValueTransformer && attrValueTransformer(elem, attrName)) 
 				|| elem.getAttribute(attrName), function(modelRef) {
 			var model = $cheeta.model.createOrGetModel(parentModels, modelRef.trim());
+
 			hasModel = true;
 			if (model instanceof Array) {
 				var mexpr = model[0].toExpr();
-				return mexpr + (mexpr.length > 0 ? '.' : '') + model[1];
+//				return mexpr + (mexpr.length > 0 ? '.' : '') + model[1];
+				return mexpr + (mexpr.length > 0 && model[1][0] != '[' ? '.' : '') + model[1];
 			} else {
 				onModel && onModel.call(directive, model);
 				return model.toExpr();
@@ -874,13 +881,21 @@ $cheeta.XHR.prototype = new XMLHttpRequest();
 					if (elem.type && elem.type.toLowerCase() === "checkbox") {
 						return elem.checked;
 					}
-					return elem.value;
+					if (elem.tagName.toLowerCase() == 'input' || elem.tagName.toLowerCase() == 'textarea') {
+						return elem.value;
+					} else {
+						return elem.innerHTML;
+					}
 				};
 				eval(elem.getAttribute(attrName) + '=_tmp__fn__()');
 //				eval(elem.getAttribute(attrName) + '=\'' + elem.value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'') + '\'');
 			}, 0);
 		}
-		$cheeta.Directive.get('value.').attach(elem, attrName, parentModels);
+		if (elem.tagName.toLowerCase() == 'input' || elem.tagName.toLowerCase() == 'textarea') {
+			$cheeta.Directive.get('value.').attach(elem, attrName, parentModels);
+		} else {
+			$cheeta.Directive.get('html.').attach(elem, attrName, parentModels);			
+		}
 		$cheeta(elem).on('keydown keyup change', this.fn[elem]);
 	}).onDetach(function(elem, attrName, parentModels) {
 		$cheeta.Directive.get('value.').detach(elem, attrName, parentModels);
@@ -1107,7 +1122,7 @@ new $cheeta.Directive('show.').onModelValueChange(function(val, elem, attrName, 
 new $cheeta.Directive('text.').onModelValueChange(function(val, elem) {
 	elem.innerHTML = '';
 	elem.appendChild(document.createTextNode(val == null ? '' : val));
-	console.log('innerhtml after: ' +  elem.innerHTML);
+//	console.log('innerhtml after: ' +  elem.innerHTML);
 });
 
 new $cheeta.Directive('value.').onModelValueChange(function(val, elem) {
@@ -1133,7 +1148,7 @@ new $cheeta.Directive('value.').onModelValueChange(function(val, elem) {
 					if (this.cache[url] != null) {
 						this.loadView(elem, this.cache[url], parentModels);
 					} else {
-						console.log('XHR: ' + url)
+//						console.log('XHR: ' + url)
 						new $cheeta.XHR(this).open('get', url).onSuccess(function(xhr) {
 							if (this.cache.size >= cacheSize) {
 								this.cache

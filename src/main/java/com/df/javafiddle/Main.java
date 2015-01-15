@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		Server server = new Server();
+		JFServer server = new JFServer();
 		server.start(8020);
 	}
 }
