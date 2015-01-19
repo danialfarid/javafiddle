@@ -1,5 +1,6 @@
 package com.df.javafiddle;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -61,7 +62,7 @@ public class Lib {
 				String localFilePath = getLocalMavenRepoPath() + "/" + filePath;
 
 				IOUtil.downloadUrlToFile(new URL(MAVEN_URL + filePath), localFilePath);
-				this.url = new URL(localFilePath);
+				this.url = new File(localFilePath).toURI().toURL();
 
 			} catch (MalformedURLException e) {
 				throw new RuntimeException(e);
