@@ -5,10 +5,22 @@
 
 	<groupId>com.df.javafiddle</groupId>
 	<artifactId>javafiddle</artifactId>
-	<version>1</version>
+	<packaging>pom</packaging>
+	<version>0.0.1</version>
 
-	<dependencies>
-	</dependencies>
+    <modules>
+        <module>javafiddle-local</module>
+        <module>javafiddle-web</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -17,52 +29,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>ro.isdc.wro4j</groupId>
-				<artifactId>wro4j-maven-plugin</artifactId>
-				<version>1.7.0</version>
-				<executions> 
-					<execution>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<minimize>false</minimize>
-					<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory>
-					<jsDestinationFolder>${basedir}/src/main/resources/</jsDestinationFolder>
-					<cssDestinationFolder>${basedir}/src/main/resources/</cssDestinationFolder>
-					<contextFolder>${basedir}/src/main/resources/</contextFolder>
-					<wroFile>${basedir}/wro.xml</wroFile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<!-- here the phase you need -->
-						<phase>process-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/classes</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${basedir}/src/main/resources/</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
