@@ -68,7 +68,7 @@ public class DataStore {
     }
 
     public String createClass(String id, String name) {
-        deleteClass(id, name);          dasd
+        deleteClass(id, name);
         Entity clazz = new Entity("Class");
         clazz.setProperty("id", id);
         clazz.setProperty("name", name);
