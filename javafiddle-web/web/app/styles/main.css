@@ -1,0 +1,32 @@
+.class-sec>.button{
+	display: inline-block;
+}
+
+.java-src textarea {
+	width: 800px;
+	height: 400px;
+}
+
+.err {
+	color: red;
+}
+/* 
+.editor {
+	border: 1px solid green;
+}
+.editor .w {
+	color: blue;
+}
+.editor .p {
+	color: grey;
+}
+.editor .n {
+	color: green;
+}
+.editor span[t="n"] {
+	color: red;
+}
+.editor .rw{
+	color: #86001c;
+}
+ */
