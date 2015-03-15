@@ -4,13 +4,8 @@
   <meta charset="utf-8">
   <title>Java Fiddle</title>
   <link rel="stylesheet" href="styles/main.css">
-
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.10.0/codemirror.min.css">
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.10.0/addon/hint/show-hint.min.css">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.10.0/codemirror.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.10.0/addon/edit/matchbrackets.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.10.0/addon/hint/show-hint.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.10.0/mode/clike/clike.min.js"></script>
+  <link rel="stylesheet" href="../bower_components/codemirror/lib/codemirror.css">
+  <link rel="stylesheet" href="../bower_components/codemirror/addon/hint/show-hint.css">
 </head>
 <body>
 <div data-model.="jf">
@@ -27,8 +22,10 @@
     <div class="add-class" data-show.=".showAddClass" data-init.=".showAddClass=false"
          data-onkeyup-esc.=".showAddClass=false">
       <div class="close" data-onaction.=".showAddClass=false" tabindex="0">X</div>
-      <input type="text" data-bind.=".newClassName" data-focus.=".showAddClass"
-             data-onkeydown-enter.=".addClass(.newClassName);.showAddClass=false">
+      <label>
+        <input type="text" data-bind.=".newClassName" data-focus.=".showAddClass"
+               data-onkeydown-enter.=".addClass(.newClassName);.showAddClass=false">
+      </label>
 
       <div class="button" data-onaction.=".addClass(.newClassName);.showAddClass=false" tabindex="0">Create</div>
     </div>
@@ -45,9 +42,14 @@
     <div class="add-lib" data-show.=".showAddLib" data-init.='.showAddLib = false'
          data-onkeyup-esc.=".showAddLib=false">
       <div class="close" data-onaction.=".showAddLib=false" tabindex="0">X</div>
-      <input type="text" name="name" data-bind.=".newLibName" data-focus.=".showAddLib"
-             data-onkeydown-enter.=".addLib(.newLibName, .newLibUrl);.showAddLib=false">
-      URL: <input type="text" name="url" data-bind.=".newLibUrl" data-init.=".newLibUrl = 'Maven'">
+      <label>
+        <input type="text" name="name" data-bind.=".newLibName" data-focus.=".showAddLib"
+               data-onkeydown-enter.=".addLib(.newLibName, .newLibUrl);.showAddLib=false">
+      </label>
+      URL:
+      <label>
+        <input type="text" name="url" data-bind.=".newLibUrl" data-init.=".newLibUrl = 'Maven'">
+      </label>
 
       <div class="button" data-onaction.=".addLib(.newLibName, .newLibUrl);showAddLib=false" tabindex="0">Add</div>
     </div>
@@ -71,22 +73,21 @@
 
     <pre class="out" data-text.=".out"></pre>
     <pre class="err" data-text.=".err"></pre>
-    <div contentEditable="true">asdas<font color="red">dddd</font>ffffff <span style="color:blue">ccccccc</span></div>
-    <div contentEditable="true">
-      <div>&zwnj;</div>
-    </div>
   </div>
 </div>
 <!-- build:js({app,.tmp}) scripts/main.js -->
 <script src="scripts/cheetajs.js"></script>
 <script src="scripts/main.js"></script>
 <script src="scripts/util.js"></script>
+<script src="../bower_components/codemirror/lib/codemirror.js"></script>
+<script src="../bower_components/codemirror/addon/edit/matchbrackets.js"></script>
+<script src="../bower_components/codemirror/addon/hint/show-hint.js"></script>
+<script src="../bower_components/codemirror/mode/clike/clike.js"></script>
 <!-- endbuild -->
 
 <!-- build:dev() dev.js -->
 <script>
   window.jfApiUrl = 'http://localhost:8888/_ah/api/jf/v1/p/';
-
 </script>
 <!-- endbuild -->
 

@@ -122,7 +122,7 @@ window.El = document.create;
 (function() {
 	var args = Array.prototype.slice.call(arguments);
 	for (var i = 0; i < args.length; i++) {
-		(args[i].prototype ? args[i].prototype : args[i]).off = (args[i].prototype ? args[i].prototype : args[i]).off || 
+		(args[i].prototype ? args[i].prototype : args[i]).off = (args[i].prototype ? args[i].prototype : args[i]).off ||
 			function(events, fn) {
 				var split = events.split(' ');
 				for (var i = 0; i < split.length; i++) {
@@ -186,7 +186,7 @@ $cheeta.model = $cheeta.model || {
 				expr = (model.hasSpecialChar ? '[\'' + model.names[0] + '\']' : '.' + model.names[0]) + expr;
 				model = model.parent;
 			}
-			
+
 			return expr.substring(1);
 		};
 		this.getValue = function() {
@@ -216,13 +216,13 @@ $cheeta.model = $cheeta.model || {
 				this.children[name] = model;
 				model.value = this.value == null ? undefined : this.value[name];
 			}
-			model.hasSpecialChar = hasSpecialChar; 
+			model.hasSpecialChar = hasSpecialChar;
 			return model;
 		};
 		this.alias = function(alias) {
 			if (alias != null && alias !== this.names[0]) {
 				this.names.push(alias);
-			}			
+			}
 		};
 		this.bindModelChange = function(elem, attrName, onChange) {
 			if (onChange) {
@@ -230,7 +230,7 @@ $cheeta.model = $cheeta.model || {
 //				console.log('binding: ' + this.toExpr(), elem, attrName, this.bindings.length);
 				elem.addEventListener('$cheetaMC-' + attrName + '-' + this.toExpr(), onChange, false);
 				if (this.value != null) {
-					$cheeta.future.evals.push([onChange, {type: '$cheetaMC-' + attrName + '-' + this.toExpr(), 'detail': 
+					$cheeta.future.evals.push([onChange, {type: '$cheetaMC-' + attrName + '-' + this.toExpr(), 'detail':
 						{value: this.value, oldValue: null, target: this}}]);
 				}
 			}
@@ -249,7 +249,7 @@ $cheeta.model = $cheeta.model || {
 			if (val !== oldVal) {
 				for (var i = 0; i < this.bindings.length; i++) {
 //					console.log('dispatching: ' , this.toExpr(), i, this.bindings[i].elem, this.bindings[i].attrName, val);
-					this.bindings[i].elem.dispatchEvent(new CustomEvent('$cheetaMC-' + this.bindings[i].attrName + '-' + this.toExpr(), 
+					this.bindings[i].elem.dispatchEvent(new CustomEvent('$cheetaMC-' + this.bindings[i].attrName + '-' + this.toExpr(),
 							{'detail': {value: val, oldValue: oldVal, target: this}}));
 				}
 			}
@@ -270,7 +270,7 @@ $cheeta.model = $cheeta.model || {
 		};
 		this.getDirective = function(name) {
 			return this.directives == null ? null : this.directives[name];
-		}; 
+		};
 	},
 	ArrayInterceptor: function(model) {
 		return {
@@ -351,14 +351,14 @@ $cheeta.model = $cheeta.model || {
 								}
 				        	}
 			        	}
-					}, 
+					},
 					get: function() {
 						return (prevProp && prevProp.get && prevProp.get.apply(value)) || model.value;
 					},
 					enumerable: true,
 					configurable: true
 				});
-			} catch(e) { 
+			} catch(e) {
 				if (!(e instanceof TypeError)) {
 					throw e;
 				}
@@ -377,7 +377,7 @@ $cheeta.model = $cheeta.model || {
 		return model;
 	},
 	get: function(ref) {
-		return this.createOrGetModel(null, ref); 
+		return this.createOrGetModel(null, ref);
 	},
 	createOrGetModel: function(parentModels, name) {
 		if (name == null) {
@@ -397,7 +397,7 @@ $cheeta.model = $cheeta.model || {
 			// bind dot-starting to the first parent
 			name = parentModels[0].names[0] + name;
 		}
-		
+
 //		var split = name.split(/ *\. *| *(?=\[) */g);
 		var split = name.split(/ *\. *| *\[ */g);
 		var rootName = split[0];
@@ -570,7 +570,7 @@ $cheeta.Directive = function (name, model) {
 			//return models;
 		};
 		this.detach = function (elem, attrName, parentModels) {
-			//var models = []; 
+			//var models = [];
 			if (origDetach) {
 				origDetach.apply(this);
 			}
@@ -582,7 +582,7 @@ $cheeta.Directive = function (name, model) {
 		};
 		return this;
 	};
-//	this.lastId = String.fromCharCode(33); 
+//	this.lastId = String.fromCharCode(33);
 //	this.nextId = function() {
 //		if (this.lastId.charCodeAt(0) === 126) {
 //			this.lastId = String.fromCharCode(33) + this.lastId;
@@ -592,7 +592,7 @@ $cheeta.Directive = function (name, model) {
 //	}
 //	this.id = function(elem) {
 //		return elem.__$cheeta__id_ || (elem.__$cheeta__id_ = this.this.nextId());
-//	}; 
+//	};
 	this.resolveModelNames = function (elem, attrName, parentModels, onModel, attrValueTransformer) {
 		var directive = this, hasModel = false;
 		var resolvedVal = this.parseModelVars(
@@ -660,7 +660,7 @@ $cheeta.Directive = function (name, model) {
 	};
 //	this.tokenizeAttrVal = function(val, onToken) {
 //		var quote = null, regexpMod = false, index = -1, optionsSplitIndex = val.indexOf(';');
-//		if (optionsSplitIndex > -1 && optionsSplitIndex) 
+//		if (optionsSplitIndex > -1 && optionsSplitIndex)
 //		val += '\x1a';
 //		for (var i = 0; i < val.length; i++) {
 //			var ch = val.charAt(i);
@@ -678,14 +678,14 @@ $cheeta.Directive = function (name, model) {
 //						regexpMod = false;
 //					}
 //					onToken.onLiteral(ch);
-//				} else if (ch === ' ' || ch === '\t' || ch === '\r' || ch === '\n' || ch === '!' || ch === '"' || ch === '[' || ch === ']' || 
+//				} else if (ch === ' ' || ch === '\t' || ch === '\r' || ch === '\n' || ch === '!' || ch === '"' || ch === '[' || ch === ']' ||
 //						(ch >= '%' && ch <= '/' && ch != '.') || (ch >= ':' && ch <= '?') || (ch >= '{' && ch <= '~') || ch === '^' || ch == '\x1a') {
 //					if (ch === '\'' || ch === '"' || ch === '/') {
 //						quote = ch;
 //					}
 //					if (index > -1) {
 //						var name = val.substring(index, i);
-//						if (name === 'true' || name === 'false' || name === 'undefined' || name === 'null' || 
+//						if (name === 'true' || name === 'false' || name === 'undefined' || name === 'null' ||
 //							name === 'NaN' || !isNaN(name)) {
 //							onToken.onLiteral(name);
 //						} else {
@@ -919,7 +919,7 @@ $cheeta.XHR = function(target) {
 		progressCallbacks.push(callback);
 		return xhr;
 	};
-		
+
 	xhr.onreadystatechange = function(e) {
 		var i = 0;
 		if (xhr.readyState === 4) {
@@ -947,11 +947,11 @@ $cheeta.XHR = function(target) {
 			for (i = 0; i < $cheeta.XHR.completeCallbacks.length; i++) {
 				$cheeta.XHR.completeCallbacks[i].apply(target, response);
 			}
-			
+
         }
 		for (i = 0; i < stateChangeCallbacks.length; i++) {
 			stateChangeCallbacks[i].apply(target, e);
-		}		
+		}
 		for (i = 0; i < $cheeta.XHR.stateChangeCallbacks.length; i++) {
 			$cheeta.XHR.stateChangeCallbacks[i].apply(target, e);
 		}
@@ -970,11 +970,11 @@ $cheeta.XHR = function(target) {
 	Object.defineProperty(xhr, 'data', {
 		get: function() {
 			return xhr.getResponseHeader('Content-Type') === 'application/json' ? JSON.parse(xhr.responseText) : xhr.responseText;
-		}, 
+		},
 		enumerable: true,
 		configurable: true
 	});
-	
+
 	return xhr;
 };
 
@@ -1125,7 +1125,7 @@ $cheeta.resource = function (config) {
 		if (elem.tagName.toLowerCase() === 'input' || elem.tagName.toLowerCase() === 'textarea') {
 			$cheeta.Directive.get('value.').attach(elem, attrName, parentModels);
 		} else {
-			$cheeta.Directive.get('html.').attach(elem, attrName, parentModels);			
+			$cheeta.Directive.get('html.').attach(elem, attrName, parentModels);
 		}
 		$cheeta(elem).on('keydown keyup change', this.fn[elem]);
 	}).onDetach(function(elem, attrName, parentModels) {
@@ -1141,7 +1141,7 @@ $cheeta.resource = function (config) {
 		//TODO handle app1['myapp,yourapp']
 		var defs = elem.getAttribute(attrName).split(/ *, */g);
 		var models = [];
-		
+
 		for (var i = 0; i < defs.length; i++) {
 			var def = defs[i];
 			//TODO handle app1['123 as 123']
@@ -1175,7 +1175,7 @@ new $cheeta.Directive('focus.').onModelValueChange(function(val, elem) {
 new $cheeta.Directive('for.').setOrder(100).onAttach(function(elem, attrName, parentModels) {
 	var parse = this.parseAttr(elem.getAttribute(attrName));
 	var name = parse.name, as = parse.as, arrayVar = parse.arrayVar;
-	
+
 	var cloneElem = function(elem) {
 		var clone = elem.cloneNode(true);
 		clone.removeAttribute('for.');
@@ -1183,7 +1183,7 @@ new $cheeta.Directive('for.').setOrder(100).onAttach(function(elem, attrName, pa
 		clone.style.display = '';
 		return clone;
 	};
-	
+
 	var onChange = function(e) {
 		var i = 0, clone, arrayIndexModel, rmElem;
 		if (!isNaN(e.detail.value) || !isNaN(e.detail.oldValue) || Array.isArray(e.detail.value) || Array.isArray(e.detail.oldValue)) {
@@ -1204,8 +1204,8 @@ new $cheeta.Directive('for.').setOrder(100).onAttach(function(elem, attrName, pa
 
 				for (i = oldLen; i < newLen; i++) {
 					clone = cloneElem(elem);
-					clone.setAttribute('model.', name + '[' + i + '] as ' + arrayVar[0] + 
-							(elem.getAttribute('model.') ? (';' + elem.getAttribute('model.').value) : '')); 
+					clone.setAttribute('model.', name + '[' + i + '] as ' + arrayVar[0] +
+							(elem.getAttribute('model.') ? (';' + elem.getAttribute('model.').value) : ''));
 					clone.style.display = '';
 					elem.parentNode.insertBefore(clone, elem);
 					arrayIndexModel = new $cheeta.model.Model($cheeta.model.root, '$i');
@@ -1216,7 +1216,7 @@ new $cheeta.Directive('for.').setOrder(100).onAttach(function(elem, attrName, pa
 		} else {
 			var newVal = e.detail.value, oldVal = e.detail.oldValue;
 			var newKeys = (newVal && Object.keys(newVal)) || [], oldKeys = (oldVal && Object.keys(oldVal)) || [];
-			
+
 			var refElem = elem;
 			var j = newKeys.length - 1;
 			i = oldKeys.length - 1;
@@ -1224,14 +1224,14 @@ new $cheeta.Directive('for.').setOrder(100).onAttach(function(elem, attrName, pa
 				if (oldKeys[i] !== newKeys[j]) {
 					if (j >= 0) {
 						clone = cloneElem(elem);
-						clone.setAttribute('model.', (arrayVar[1] ? name + '[\'' + newKeys[j] + '\'] as ' + arrayVar[1] : '') + 
-								(elem.getAttribute('model.') ? (';' + elem.getAttribute('model.').value) : '')); 
+						clone.setAttribute('model.', (arrayVar[1] ? name + '[\'' + newKeys[j] + '\'] as ' + arrayVar[1] : '') +
+								(elem.getAttribute('model.') ? (';' + elem.getAttribute('model.').value) : ''));
 						elem.parentNode.insertBefore(clone, refElem);
 						arrayIndexModel = new $cheeta.model.Model($cheeta.model.root, '$i');
 						arrayIndexModel.toExpr = makeToExpr(i);
 						var keyModel = new $cheeta.model.Model($cheeta.model.root, arrayVar[0]);
 						keyModel.toExpr = makeToExprModel(newKeys[j]);
-						$cheeta.compiler.compile(parentModels.concat(arrayIndexModel, keyModel), clone);					
+						$cheeta.compiler.compile(parentModels.concat(arrayIndexModel, keyModel), clone);
 						refElem = clone;
 						j--;
 					} else {
@@ -1305,7 +1305,7 @@ $cheeta.keyconsts = {
 };
 new $cheeta.Directive('on*').onAttach(function(elem, attrName, parentModels) {
 	this.resolveModelNames(elem, attrName, parentModels);
-	
+
 	var baseAttrName = attrName.substring(attrName.indexOf('data-') === 0 ? 7 : 2, attrName.length - 1);
 	var split = baseAttrName.split('-');
 	(function bindEvent(event, keys, attrName) {
@@ -1335,7 +1335,7 @@ new $cheeta.Directive('on*').onAttach(function(elem, attrName, parentModels) {
 					e.stopPropagation();
 				}
 			};
-			elem.addEventListener(event, keyFn, false);			
+			elem.addEventListener(event, keyFn, false);
 		} else {
 			var listenerFn = function(e) {
 				fn.apply(elem, [e]);
@@ -1459,7 +1459,7 @@ $cheeta.hash = {
 			val = key;
 			key = '';
 		}
-		var oldVal = this.keyval[key]; 
+		var oldVal = this.keyval[key];
 		this.keyval[key] = val;
 		var _this = this;
 		var toHash = function() {
@@ -1496,13 +1496,13 @@ $cheeta.hash = {
 						index = i + 1;
 					}
 				}
-				
+
 				for (key in _this.keyval) {
 					if (allKeys[key] == null) {
 						prev = _this.keyval[key];
 						delete _this.keyval[key];
 						_this.notify(key, null, prev);
-					} 
+					}
 				}
 			} finally {
 				_this.value = hash;

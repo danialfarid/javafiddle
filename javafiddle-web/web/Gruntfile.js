@@ -37,7 +37,7 @@ module.exports = function (grunt) {
       },
       js: {
         files: ['<%= config.app %>/scripts/{,*/}*.js'],
-        tasks: ['jshint', 'copy:src', 'copy:server'],
+        tasks: ['jshint', 'copy:src', 'copy:server', 'copy:bower'],
         options: {
           livereload: 35722
         }
@@ -336,8 +336,15 @@ module.exports = function (grunt) {
         expand: true,
         dot: true,
         cwd: '<%= config.app %>',
-        dest: '<%= config.dist %>/../../target/javafiddle-web-0.0.1/static',
+        dest: '<%= config.dist %>/../../target/javafiddle-web-0.0.1',
         src: '{,*/}*'
+      },
+      bower: {
+        expand: true,
+        dot: true,
+        cwd: '<%= config.app %>/..',
+        src: 'bower_components/**',
+        dest: '<%= config.dist %>/../../target/javafiddle-web-0.0.1/'
       }
     },
 

@@ -1,36 +1,39 @@
 package com.df.javafiddle;
 
+
 import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
-import com.google.appengine.api.datastore.Query.Filter;
-import com.google.appengine.api.datastore.Query.FilterOperator;
-import com.google.appengine.api.datastore.Query.FilterPredicate;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.google.appengine.api.datastore.Query.*;
+
 public class DataStore {
 
     public static DataStore INSTANCE = new DataStore();
 
-    protected DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    protected DatastoreService dataStore = DatastoreServiceFactory.getDatastoreService();
 
     char[] alphanumeric = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     public Project createProject() {
         Entity clazz = new Entity("Class");
-        String id = new StringBuilder().append(alphanumeric[random36()]).append(alphanumeric[random36()])
-                .append(alphanumeric[random36()]).append(alphanumeric[random36()]).append(alphanumeric[random36()])
-                .append(alphanumeric[random36()]).toString();
+        String id = generateId();
         clazz.setProperty("id", id);
         clazz.setProperty("name", "Main");
         clazz.setProperty("src",
                 "public class Main {\r\n\tpublic static void main(String args[]) {\r\n\t\t\r\n\t}\r\n}");
         clazz.setProperty("date", new Date());
-        datastore.put(clazz);
+        dataStore.put(clazz);
         return new Project().init(id);
+    }
+
+    private String generateId() {
+        return String.valueOf(alphanumeric[random36()]) + alphanumeric[random36()] +
+                alphanumeric[random36()] + alphanumeric[random36()] +
+                alphanumeric[random36()] + alphanumeric[random36()];
     }
 
     protected int random36() {
@@ -38,11 +41,11 @@ public class DataStore {
     }
 
     public List<Clazz> getClasses(String id) {
-        List<Clazz> classes = new ArrayList();
+        List<Clazz> classes = new ArrayList<>();
         Filter idFilter = new FilterPredicate("id", FilterOperator.EQUAL, id);
 
         Query q = new Query("Class").setFilter(idFilter);
-        PreparedQuery pq = datastore.prepare(q);
+        PreparedQuery pq = dataStore.prepare(q);
 
         for (Entity result : pq.asIterable()) {
             String name = (String) result.getProperty("name");
@@ -57,7 +60,7 @@ public class DataStore {
         Filter idFilter = new FilterPredicate("id", FilterOperator.EQUAL, id);
 
         Query q = new Query("Lib").setFilter(idFilter);
-        PreparedQuery pq = datastore.prepare(q);
+        PreparedQuery pq = dataStore.prepare(q);
 
         for (Entity result : pq.asIterable()) {
             String name = (String) result.getProperty("name");
@@ -81,7 +84,7 @@ public class DataStore {
         content += "public class " + split[split.length - 1] + " {\r\n\t\r\n}";
         clazz.setProperty("src", content);
         clazz.setProperty("date", new Date());
-        datastore.put(clazz);
+        dataStore.put(clazz);
         return content;
     }
 
@@ -92,7 +95,7 @@ public class DataStore {
         lib.setProperty("name", name);
         lib.setProperty("url", url);
         lib.setProperty("date", new Date());
-        datastore.put(lib);
+        dataStore.put(lib);
         return name;
     }
 
@@ -101,10 +104,10 @@ public class DataStore {
                 new FilterPredicate("name", FilterOperator.EQUAL, name));
 
         Query q = new Query("Class").setFilter(filter);
-        Entity result = datastore.prepare(q).asSingleEntity();
+        Entity result = dataStore.prepare(q).asSingleEntity();
 
         result.setProperty("src", src);
-        datastore.put(result);
+        dataStore.put(result);
     }
 
     public void deleteClass(String id, String name) {
@@ -112,11 +115,9 @@ public class DataStore {
                 new FilterPredicate("name", FilterOperator.EQUAL, name));
 
         Query q = new Query("Class").setFilter(filter);
-        Iterable<Entity> result = datastore.prepare(q).asIterable();
+        Iterable<Entity> result = dataStore.prepare(q).asIterable();
         for (Entity entity : result) {
-            if (result != null) {
-                datastore.delete(entity.getKey());
-            }
+            dataStore.delete(entity.getKey());
         }
     }
 
@@ -125,11 +126,9 @@ public class DataStore {
                 new FilterPredicate("name", FilterOperator.EQUAL, name));
 
         Query q = new Query("Lib").setFilter(filter);
-        Iterable<Entity> result = datastore.prepare(q).asIterable();
+        Iterable<Entity> result = dataStore.prepare(q).asIterable();
         for (Entity entity : result) {
-            if (result != null) {
-                datastore.delete(entity.getKey());
-            }
+            dataStore.delete(entity.getKey());
         }
     }
 
@@ -137,7 +136,7 @@ public class DataStore {
         Filter filter = new FilterPredicate("id", FilterOperator.EQUAL, id);
 
         Query q = new Query("Class").setFilter(filter);
-        int count = datastore.prepare(q).countEntities(FetchOptions.Builder.withDefaults());
+        int count = dataStore.prepare(q).countEntities(FetchOptions.Builder.withDefaults());
         return count > 0;
     }
 }

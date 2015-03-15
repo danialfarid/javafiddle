@@ -8,31 +8,30 @@ import java.io.IOException;
 
 public class RedirectFilter implements Filter {
 
+    public static String html;
+
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         HttpServletResponse resp = (HttpServletResponse) response;
         HttpServletRequest req = (HttpServletRequest) request;
-        String requestURI = req.getRequestURI();
-        if (!requestURI.startsWith("/static") && !requestURI.startsWith("/_ah")) {
-            if (requestURI.endsWith(".js") || requestURI.endsWith(".css") ||
-                    requestURI.endsWith(".jpg") || requestURI.endsWith(".png") ||
-                    requestURI.endsWith(".ico") || requestURI.endsWith(".gif")) {
-                resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-
-                String url = "http://" + req.getServerName() + ":" + req.getServerPort() + "/static/index.html";
-                url = "/static" + requestURI;
-                resp.setHeader("Location", url);
-                return;
+        String[] requestURI = req.getRequestURI().split("/");
+        if (isProjectId(requestURI)) {
+            if (html == null || req.getParameter("no-cache") != null) {
+                String path = req.getSession().getServletContext().getRealPath("/index.html");
+                html = IOUtil.readFile(new File(path));
             }
-            String path = req.getSession().getServletContext().getRealPath("/static/index.html");
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.setContentType("text/html");
-            resp.getWriter().write(IOUtil.readFile(new File(path)));
+            resp.getWriter().write(html);
 
             return;
         }
         chain.doFilter(req, resp);
+    }
+
+    protected boolean isProjectId(String[] parts) {
+        return parts.length == 2 && parts[1].length() == 6;
     }
 
     @Override

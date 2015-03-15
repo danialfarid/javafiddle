@@ -86,14 +86,14 @@ public class JFServer {
             }
         }));
 
-        endpoints.add(new ServiceEndpoint().init("GET", "/out").withAction(new ServerAction<String, Void>() {
+        endpoints.add(new ServiceEndpoint().init("GET", "/{id}/out").withAction(new ServerAction<String, Void>() {
             @Override
             public String perform(String method, Map<String, String> params, Void obj) {
                 return out.poll();
             }
         }));
 
-        endpoints.add(new ServiceEndpoint().init("GET", "/err").withAction(new ServerAction<String, Void>() {
+        endpoints.add(new ServiceEndpoint().init("GET", "/{id}/err").withAction(new ServerAction<String, Void>() {
             @Override
             public String perform(String method, Map<String, String> params, Void obj) {
                 return err.poll();
@@ -145,13 +145,14 @@ public class JFServer {
                         try {
                             ServiceEndpoint.Result<Object> result = endpoint.consume(varMap, val);
                             if (result.hasResult) {
-                                writeResponse(httpExchange, JSON.INSTANCE.stringify(result.data),
-                                        "application/json", 200);
+                                writeResponse(httpExchange, result.data == null ? null :
+                                                JSON.INSTANCE.stringify(result.data),
+                                        "application/json; charset=UTF-8", 200);
                             }
                             writeResponse(httpExchange, "", "text/plain", 200);
                         } catch (ServiceException e) {
                             writeResponse(httpExchange, JSON.INSTANCE.stringify(e.error),
-                                    "application/json", e.status);
+                                    "application/json; charset=UTF-8", e.status);
                         }
                     }
                 }
@@ -178,9 +179,10 @@ public class JFServer {
                 httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", origin);
             }
         }
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS'");
-        // $response->header('Access-Control-Allow-Headers', 'Content-Type,
-        // X-Requested-With, X-authentication, X-client');
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Content-Type");
+        httpExchange.getResponseHeaders().add("Content-Length",
+                String.valueOf(content == null ? 0 : content.length()));
 
         if (content != null) {
             byte[] bytes = content.getBytes("UTF-8");

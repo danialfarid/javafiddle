@@ -4,15 +4,6 @@ xmlns="http://java.sun.com/xml/ns/javaee"
 xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
-
-	<servlet>
-		<servlet-name>default</servlet-name>
-		<servlet-class> javax.servlet.http.HttpServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>/static/</url-pattern>
-	</servlet-mapping>
     <filter>
         <filter-name>cors_filter</filter-name>
         <filter-class>com.df.javafiddle.CORSFilter</filter-class>
@@ -31,6 +22,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
     </filter-mapping>
 
     <welcome-file-list>
-		<welcome-file>static/index.html</welcome-file>
+		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 </web-app>

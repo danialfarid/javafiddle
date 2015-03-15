@@ -71,7 +71,7 @@
         <resources>
             <resource>
                 <directory>${basedir}/web/dist</directory>
-                <targetPath>${project.build.directory}/${project.build.finalName}/static</targetPath>
+                <targetPath>${project.build.directory}/${project.build.finalName}</targetPath>
             </resource>
         </resources>
         <!-- for hot reload of the web application-->
@@ -173,7 +173,7 @@
                         </goals>
                         <configuration>
                             <sourceFile>${project.build.directory}/${project.build.finalName}/WEB-INF/lib/javafiddle-local-0.0.1.jar</sourceFile>
-                            <destinationFile>${project.build.directory}/${project.build.finalName}/static/jfclient.jar</destinationFile>
+                            <destinationFile>${project.build.directory}/${project.build.finalName}/jfclient.jar</destinationFile>
                         </configuration>
                     </execution>
                 </executions>
