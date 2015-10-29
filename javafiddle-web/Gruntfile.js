@@ -43,7 +43,7 @@ module.exports = function (grunt) {
         }
       },
       externalJs: {
-        files: ['<%= config.app %>/../../../../cheetajs/dist/cheetajs.js'],
+        files: ['../../cheetajs/dist/cheetajs.js'],
         tasks: ['copy:external', 'jshint']
       },
       //jstest: {
@@ -64,7 +64,8 @@ module.exports = function (grunt) {
         files: [
           '<%= config.app %>/{,*/}*.html',
           '.tmp/styles/{,*/}*.css',
-          '<%= config.app %>/images/{,*/}*'
+          '<%= config.app %>/images/{,*/}*',
+          '../../cheetajs/dist/cheetajs.js'
         ]
       }
     },
@@ -83,6 +84,7 @@ module.exports = function (grunt) {
           middleware: function(connect) {
             return [
               connect.static('.tmp'),
+              connect().use('/cheetajs', connect.static('../../cheetajs/dist')),
               connect().use('/bower_components', connect.static('./bower_components')),
               connect.static(config.app)
             ];

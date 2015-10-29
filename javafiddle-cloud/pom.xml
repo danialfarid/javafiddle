@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>war</packaging>
     <version>0.0.1</version>
-    <artifactId>javafiddle-web</artifactId>
+    <artifactId>javafiddle-cloud</artifactId>
 
     <parent>
         <groupId>com.df.javafiddle</groupId>

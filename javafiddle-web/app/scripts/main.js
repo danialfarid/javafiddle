@@ -1,7 +1,7 @@
 'use strict';
 Oo.future(function () {
 
-var jf = window.jf = {};
+var jf = M.jf;
 var localUrl = function () {
 	return 'http://localhost:' + (jf.port || '8020') + '/';
 };
@@ -122,7 +122,7 @@ jf.run = function () {
 		jf.out = '';
 		jf.err = '';
 	}
-	new Oo.XHR().open('POST', localUrl() + jf.project.id + '/run').send().onError(function (xhr) {
+	new Oo.api(localUrl() + jf.project.id + '/run').$post(null, function (xhr) {
 		jf.err += xhr.responseText;
 	});
 };
@@ -130,7 +130,7 @@ jf.run = function () {
 function pollLogs() {
 	jf.out = '';
 	var pollOut = function () {
-		new Oo.XHR().open('GET', localUrl() + jf.project.id + '/out').send().onSuccess(function (xhr) {
+		new Oo.api(localUrl() + jf.project.id + '/out').$get(function (xhr) {
 			jf.out += xhr.responseText;
 			pollOut();
 		});
@@ -138,7 +138,7 @@ function pollLogs() {
 	pollOut();
 	jf.err = '';
 	var pollErr = function () {
-		new Oo.XHR().open('GET', localUrl() + jf.project.id + '/err').send().onSuccess(function (xhr) {
+		new Oo.api(localUrl() + jf.project.id + '/err').$get().onSuccess(function (xhr) {
 			jf.err += xhr.responseText;
 			pollErr();
 		});
@@ -170,7 +170,7 @@ Oo.watch('jf.selClass', function () {
 });
 
 jf.messages = [];
-Oo.XHR.onError(function (xhr) {
+Oo.http.onError(function (xhr) {
 	jf.messages.push(xhr.data);
 });
 

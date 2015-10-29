@@ -30,8 +30,8 @@
       <div class="button" data-onaction.=".addClass(.newClassName);.showAddClass=false" tabindex="0">Create</div>
     </div>
     <ul class="classes">
-      <li data-for.="clazz in .classes" data-class.="$i==jf.selIndex ? 'highlight' : ''"
-          data-onaction.="jf.selClass=clazz; jf.selIndex=$i" tabindex="0">
+      <li data-for.="i, clazz: .classes" data-class.="i==jf.selIndex ? 'highlight' : ''"
+          data-onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
         <div data-text.="clazz.name"></div>
         <div class="button" data-onaction.="jf.removeClass(clazz.name)" tabindex="0">X</div>
       </li>
@@ -54,7 +54,7 @@
       <div class="button" data-onaction.=".addLib(.newLibName, .newLibUrl);showAddLib=false" tabindex="0">Add</div>
     </div>
     <ul class="libs">
-      <li data-for.="lib in .libs">
+      <li data-for.="lib: .libs">
         <div data-text.="lib.name" data-title.="lib.url"></div>
         <span data-text.="'#latest: (' + lib.version + ')'"></span>
 
@@ -76,7 +76,7 @@
   </div>
 </div>
 <!-- build:js({app,.tmp}) scripts/main.js -->
-<script src="scripts/cheetajs.js"></script>
+<script src="cheetajs/cheetajs.js"></script>
 <script src="scripts/main.js"></script>
 <script src="scripts/util.js"></script>
 <script src="../bower_components/codemirror/lib/codemirror.js"></script>
@@ -87,7 +87,7 @@
 
 <!-- build:dev() dev.js -->
 <script>
-  window.jfApiUrl = 'http://localhost:8888/_ah/api/jf/v1/p/';
+  window.jfApiUrl = 'http://localhost:8080/_ah/api/jf/v1/p/';
 </script>
 <!-- endbuild -->
 
