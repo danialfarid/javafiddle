@@ -4,9 +4,7 @@ import com.df.javafiddle.DynamicURLClassLoader;
 import com.df.javafiddle.IOUtil;
 
 import javax.tools.*;
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -80,11 +78,30 @@ public class Compiler {
 				if (!it.hasNext())
 					break;
 				Diagnostic<? extends javax.tools.JavaFileObject> diagnostic = it.next();
+				int lineStart = getLineStart(diagnostic.getSource(), diagnostic.getLineNumber());
 				compileErrors.add(new CompileError().init(diagnostic.getMessage(null),
-                        diagnostic.getLineNumber(), diagnostic.getStartPosition(),
-                        diagnostic.getEndPosition()));
+                        diagnostic.getLineNumber(), diagnostic.getStartPosition() - lineStart,
+                        diagnostic.getEndPosition() - lineStart));
 			}
 			throw new CompilationErrorException(className, compileErrors);
+		}
+	}
+
+	private int getLineStart(JavaFileObject source, long lineNumber) {
+		try {
+			Reader reader = source.openReader(true);
+			int line = 1;
+			int count = 0;
+			while (line < lineNumber) {
+				int i = reader.read();
+				count ++;
+				if ((char)i == '\n') {
+					line++;
+				}
+			}
+			return count;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

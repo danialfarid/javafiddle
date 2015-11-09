@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="../bower_components/codemirror/lib/codemirror.css">
   <link rel="stylesheet" href="../bower_components/codemirror/addon/hint/show-hint.css">
+  <link rel="stylesheet" href="../bower_components/codemirror/addon/lint/lint.css">
 </head>
 <body>
 <div data-model.="jf">
@@ -32,7 +33,7 @@
     <ul class="classes">
       <li data-for.="i, clazz: .classes" data-class.="i==jf.selIndex ? 'highlight' : ''"
           data-onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
-        <div data-text.="clazz.name"></div>
+        <div data-text.="clazz.name">aaaa</div>
         <div class="button" data-onaction.="jf.removeClass(clazz.name)" tabindex="0">X</div>
       </li>
     </ul>
@@ -62,10 +63,10 @@
       </li>
     </ul>
     <div class="java-src">
-      <!--  				<pre class="editor" tabindex="1" data-editor.=".selClass.src"></pre>-->
+        				<!--<pre class="editor" tabindex="1" data-editor.=".selClass.src"></pre>-->
       <div class="javaEditor"></div>
-      <!--  				<textarea data-bind.=".selClass.src" data-disabled.=".selClass ? null : true"
-                          data-watch.=".selClass.src" data-onwatch.=".updateClass(.selClass.name, .selClass.src)"></textarea>-->
+        				<textarea data-disabled.=".selClass ? null : true" style="display: none"
+                          data-watch.=".selClass: .selectClass()"></textarea>
     </div>
 
     <div class="button" data-onclick.onkeydown-space-enter.=".run()">run</div>
@@ -82,12 +83,13 @@
 <script src="../bower_components/codemirror/lib/codemirror.js"></script>
 <script src="../bower_components/codemirror/addon/edit/matchbrackets.js"></script>
 <script src="../bower_components/codemirror/addon/hint/show-hint.js"></script>
+<script src="../bower_components/codemirror/addon/lint/lint.js"></script>
 <script src="../bower_components/codemirror/mode/clike/clike.js"></script>
 <!-- endbuild -->
 
 <!-- build:dev() dev.js -->
 <script>
-  window.jfApiUrl = 'http://localhost:8080/_ah/api/jf/v1/p/';
+  window.jfApiUrl = 'http://localhost:8888/_ah/api/jf/v1/p/';
 </script>
 <!-- endbuild -->
 

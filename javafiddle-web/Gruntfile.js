@@ -338,7 +338,7 @@ module.exports = function (grunt) {
         expand: true,
         dot: true,
         cwd: '<%= config.app %>',
-        dest: '<%= config.dist %>/../../target/javafiddle-web-0.0.1',
+        dest: '<%= config.dist %>/../../target/javafiddle-cloud-0.0.1',
         src: '{,*/}*'
       },
       bower: {
@@ -346,7 +346,7 @@ module.exports = function (grunt) {
         dot: true,
         cwd: '<%= config.app %>/..',
         src: 'bower_components/**',
-        dest: '<%= config.dist %>/../../target/javafiddle-web-0.0.1/'
+        dest: '<%= config.dist %>/../../target/javafiddle-cloud-0.0.1/'
       }
     },
 

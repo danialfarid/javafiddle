@@ -34,8 +34,6 @@ public class JFServer {
     public List<ServiceEndpoint> endpoints = new ArrayList<ServiceEndpoint>();
 
     {
-        endpoints.add(new ServiceEndpoint().init("OPTIONS", "*"));
-
         endpoints.add(new ServiceEndpoint().init("POST", "/{id}").withAction(new ServerAction<Void, Void>() {
             @Override
             protected Void perform(String method, Map<String, String> params, Void obj) {
@@ -44,12 +42,16 @@ public class JFServer {
             }
         }));
 
-        endpoints.add(new ServiceEndpoint().init("*", "/{id}/class").withAction(new ServerAction<Void, Clazz>() {
+        endpoints.add(new ServiceEndpoint().init("*", "/{id}/class").withAction(new ServerAction<String, Clazz>() {
             @Override
-            public Void perform(String method, Map<String, String> params, Clazz clazz) {
+            public String perform(String method, Map<String, String> params, Clazz clazz) {
                 Project project = getProject(params);
                 if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
-                    project.updateClass(clazz);
+                    try {
+                        project.updateClass(clazz);
+                    } catch (CompilationErrorException e) {
+                        return JSON.INSTANCE.stringify(e.compileErrors);
+                    }
                 } else if ("DELETE".equalsIgnoreCase(method)) {
                     project.removeClass(clazz.name);
                 }
@@ -135,28 +137,37 @@ public class JFServer {
         createContext("/", new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
+                String method = httpExchange.getRequestMethod();
+                if ("OPTIONS".equalsIgnoreCase(method)) {
+                    writeResponse(httpExchange, null, "text/plain", 200);
+                    return;
+                }
                 String content = IOUtil.readStream(httpExchange.getRequestBody());
                 String path = httpExchange.getRequestURI().getPath();
                 String[] paths = (path.startsWith("/") ? path.substring(1) : path).split("/", 0);
                 for (ServiceEndpoint endpoint : endpoints) {
-                    Map<String, String> varMap = endpoint.matches(httpExchange.getRequestMethod(), paths);
+                    Map<String, String> varMap = endpoint.matches(method, paths);
                     if (varMap != null) {
                         Object val = JSON.INSTANCE.parse(content, endpoint.getRequestClass());
                         try {
-                            ServiceEndpoint.Result<Object> result = endpoint.consume(varMap, val);
+                            ServiceEndpoint.Result<Object> result = endpoint.consume(method, varMap, val);
                             if (result.hasResult) {
                                 writeResponse(httpExchange, result.data == null ? null :
                                                 JSON.INSTANCE.stringify(result.data),
                                         "application/json; charset=UTF-8", 200);
+                                return;
                             }
                             writeResponse(httpExchange, "", "text/plain", 200);
+                            return;
                         } catch (ServiceException e) {
                             writeResponse(httpExchange, JSON.INSTANCE.stringify(e.error),
                                     "application/json; charset=UTF-8", e.status);
+                            return;
                         }
                     }
                 }
                 writeResponse(httpExchange, null, "text/plain", 404);
+                return;
             }
         });
 

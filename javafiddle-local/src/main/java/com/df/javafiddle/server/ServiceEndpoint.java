@@ -24,7 +24,7 @@ public class ServiceEndpoint {
         return action.getRequestClass();
     }
 
-    public <R, Q> Result<R> consume(Map<String, String> varsMap, Q obj) {
+    public <R, Q> Result<R> consume(String method, Map<String, String> varsMap, Q obj) {
         R r = (R) action.perform(method, varsMap, obj);
         return new Result<R>(true, action == null ? null : r);
     }

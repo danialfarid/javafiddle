@@ -5,6 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IOUtil {
 	public static String readFile(File file) throws IOException {
@@ -61,8 +63,17 @@ public class IOUtil {
 	}
 
     public static String readStack(Throwable e) {
+		e = e.getCause() != null ? e.getCause() : e;
+		List<StackTraceElement> traceElementList = new ArrayList<>();
+		for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+			if (!stackTraceElement.getClassName().startsWith(Project.class.getPackage().getName())) {
+				traceElementList.add(stackTraceElement);
+			}
+		}
+
+		e.setStackTrace(traceElementList.toArray(new StackTraceElement[0]));
         StringWriter stringWriter = new StringWriter();
-        (e.getCause() != null ? e.getCause() : e).printStackTrace(new PrintWriter(stringWriter));
+		e.printStackTrace(new PrintWriter(stringWriter));
         return stringWriter.toString();
     }
 }

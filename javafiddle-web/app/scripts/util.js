@@ -10,9 +10,10 @@ window.DF = {
         } else {
           lastUpdate = Date.now();
         }
+        var args = arguments;
         timeout = setTimeout(function () {
-          fn.apply(_this, arguments);
-          lastArgs = arguments;
+          fn.apply(_this, args);
+          lastArgs = args;
           lastUpdate = Date.now();
         }, rate);
       };

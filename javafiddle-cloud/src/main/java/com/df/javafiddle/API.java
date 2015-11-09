@@ -14,9 +14,6 @@ import static com.google.api.server.spi.config.ApiMethod.HttpMethod.*;
         namespace = @ApiNamespace(ownerDomain = "com.df.javafiddle", ownerName = "danial.farid"))
 public class API {
 
-    @ApiMethod(httpMethod = "OPTIONS", path = "p")
-    public void options() {}
-
     @ApiMethod(httpMethod = GET, path = "p/{id}")
     public Project getProject(@Named("id") String id) throws BadRequestException {
         if (DataStore.INSTANCE.getProject(id)) {

@@ -13,4 +13,14 @@ public class CompileError {
         this.to = to;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "CompileError{" +
+                "reason='" + reason + '\'' +
+                ", line=" + line +
+                ", from=" + from +
+                ", to=" + to +
+                '}';
+    }
 }

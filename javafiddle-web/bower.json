@@ -1,5 +1,6 @@
 {
   "name": "web",
   "dependencies": {
+    "codemirror": "CodeMirror#~5.8.0"
   }
 }

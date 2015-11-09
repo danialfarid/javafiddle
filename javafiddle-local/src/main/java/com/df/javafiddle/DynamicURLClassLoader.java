@@ -1,12 +1,12 @@
 package com.df.javafiddle;
 
+import com.df.javafiddle.compiler.CompilationErrorException;
+import com.df.javafiddle.compiler.Compiler;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.df.javafiddle.compiler.CompilationErrorException;
-import com.df.javafiddle.compiler.Compiler;
 
 public class DynamicURLClassLoader extends URLClassLoader {
 
@@ -32,21 +32,8 @@ public class DynamicURLClassLoader extends URLClassLoader {
 
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
-		String source;
-		if ((source = newClassesMap.remove(name)) != null) {
-			classes.remove(name);
-			try {
-				Class<?> compiled = compiler.compile(name, source, projectId);
-				classes.put(name, compiled);
-				return compiled;
-			} catch (CompilationErrorException e) {
-				newClassesMap.put(name, source);
-				System.err.println(e.className);
-				System.err.println(e.compileErrors);
-			}
-			// return Class.forName(name);
-			// return defineClass(name, , 0, bytes.length);
-		} else if (removedClasses.containsKey(name)) {
+//		String source;
+		if (removedClasses.containsKey(name)) {
 			throw new ClassNotFoundException(name);
 		} else if (classes.containsKey(name)) {
 			return classes.get(name);
@@ -61,7 +48,16 @@ public class DynamicURLClassLoader extends URLClassLoader {
 	}
 
 	public void addClass(String name, String source) {
-		newClassesMap.put(name, source);
+//		newClassesMap.put(name, source);
+		try {
+			Class<?> compiled = compiler.compile(name, source, projectId);
+			classes.put(name, compiled);
+		} catch (CompilationErrorException e) {
+			newClassesMap.put(name, source);
+			System.err.println(e.className);
+			System.err.println(e.compileErrors);
+			throw e;
+		}
 	}
 
 	public void remove(String className) {
