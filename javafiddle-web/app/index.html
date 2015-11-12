@@ -2,82 +2,83 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Java Fiddle</title>
+  <title text.="messages.title"></title>
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="../bower_components/codemirror/lib/codemirror.css">
   <link rel="stylesheet" href="../bower_components/codemirror/addon/hint/show-hint.css">
   <link rel="stylesheet" href="../bower_components/codemirror/addon/lint/lint.css">
+  <link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
 </head>
 <body>
 <div data-model.="jf">
   <div class="notif" data-text.=".messages"></div>
-  <h1 class="name">Java Fiddle</h1>
-  <span>Share your java code here</span>
-  To run the code download <a class="cl-srv" href="/jfclient.jar" target="_blank">jfclient.jar</a>
-  <span>then double click on it or run this command <code>$java -jar jfclient.jar</code></span>
+  <div class="header">
+    <div class="top-panel">
+      <button disabled.="!.clientAlive" class="run" onaction.=".run()">{{messages.run}}
+      </button>
+      <a target="_blank" onclick.=".showDownloadHelp = !.showDownloadHelp" show.="!.clientAlive"
+         href.="messages.downloadLink">{{messages.download}} & {{messages.run}} {{messages.jarName}}</a>
 
-  <div class="button" tabindex="0" data-onaction.=".run()">Run</div>
-  <div class="class-sec">
-    Class List
-    <div class="button" data-onaction.=".showAddClass=true" tabindex="0">+</div>
-    <div class="add-class" data-show.=".showAddClass" data-init.=".showAddClass=false"
-         data-onkeyup-esc.=".showAddClass=false">
-      <div class="close" data-onaction.=".showAddClass=false" tabindex="0">X</div>
-      <label>
-        <input type="text" data-bind.=".newClassName" data-focus.=".showAddClass"
-               data-onkeydown-enter.=".addClass(.newClassName);.showAddClass=false">
-      </label>
-
-      <div class="button" data-onaction.=".addClass(.newClassName);.showAddClass=false" tabindex="0">Create</div>
+      <div show.="!.clientAlive && .showDownloadHelp" html.="messages.downloadClient"></div>
     </div>
-    <ul class="classes">
-      <li data-for.="i, clazz: .classes" data-class.="i==jf.selIndex ? 'highlight' : ''"
-          data-onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
-        <div data-text.="clazz.name">aaaa</div>
-        <div class="button" data-onaction.="jf.removeClass(clazz.name)" tabindex="0">X</div>
-      </li>
-    </ul>
+    <h2 text.="messages.title"></h2>
   </div>
-  <div class="lib-sec">
-    <div class="button" data-onaction.=".showAddLib=true" tabindex="0">+</div>
-    <div class="add-lib" data-show.=".showAddLib" data-init.='.showAddLib = false'
-         data-onkeyup-esc.=".showAddLib=false">
-      <div class="close" data-onaction.=".showAddLib=false" tabindex="0">X</div>
-      <label>
-        <input type="text" name="name" data-bind.=".newLibName" data-focus.=".showAddLib"
-               data-onkeydown-enter.=".addLib(.newLibName, .newLibUrl);.showAddLib=false">
-      </label>
-      URL:
-      <label>
-        <input type="text" name="url" data-bind.=".newLibUrl" data-init.=".newLibUrl = 'Maven'">
-      </label>
-
-      <div class="button" data-onaction.=".addLib(.newLibName, .newLibUrl);showAddLib=false" tabindex="0">Add</div>
+  <div class="side-panel" resizable.="'right'">
+    <div class="class-sec">
+      <div class="search">
+        <label>
+          <input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">
+        </label>
+        <button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>
+      </div>
+      <ul class="classes">
+        <li for.="i, clazz: .classes" class.="i==jf.selIndex ? 'selected' : ''"
+            onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
+          <span text.="clazz.name"></span>
+          <a class="remove" onaction.="jf.removeClass(clazz.name)" tabindex="0">&#215</a>
+        </li>
+      </ul>
     </div>
-    <ul class="libs">
-      <li data-for.="lib: .libs">
-        <div data-text.="lib.name" data-title.="lib.url"></div>
-        <span data-text.="'#latest: (' + lib.version + ')'"></span>
+    <div class="lib-sec">
+      <div class="button" data-onaction.=".showAddLib=true" tabindex="0">+</div>
+      <div class="add-lib" data-show.=".showAddLib" data-init.='.showAddLib = false'
+           data-onkeyup-esc.=".showAddLib=false">
+        <div class="close" data-onaction.=".showAddLib=false" tabindex="0">X</div>
+        <label>
+          <input type="text" name="name" data-bind.=".newLibName" data-focus.=".showAddLib"
+                 data-onkeydown-enter.=".addLib(.newLibName, .newLibUrl);.showAddLib=false">
+        </label>
+        URL:
+        <label>
+          <input type="text" name="url" data-bind.=".newLibUrl" data-init.=".newLibUrl = 'Maven'">
+        </label>
 
-        <div class="button" data-onaction.="jf.removeLib(lib.name)" tabindex="0">X</div>
-      </li>
-    </ul>
-    <div class="java-src">
-        				<!--<pre class="editor" tabindex="1" data-editor.=".selClass.src"></pre>-->
-      <div class="javaEditor"></div>
-        				<textarea data-disabled.=".selClass ? null : true" style="display: none"
-                          data-watch.=".selClass: .selectClass()"></textarea>
+        <div class="button" data-onaction.=".addLib(.newLibName, .newLibUrl);showAddLib=false" tabindex="0">Add
+        </div>
+      </div>
+      <ul class="libs">
+        <li data-for.="lib: .libs">
+          <div data-text.="lib.name" data-title.="lib.url"></div>
+          <span data-text.="'#latest: (' + lib.version + ')'"></span>
+
+          <div class="button" data-onaction.="jf.removeLib(lib.name)" tabindex="0">X</div>
+        </li>
+      </ul>
     </div>
-
-    <div class="button" data-onclick.onkeydown-space-enter.=".run()">run</div>
-    <label><input type="checkbox" data-bind.=".preserveLog">Preserve Log</label>
-
-    <pre class="out" data-text.=".out"></pre>
-    <pre class="err" data-text.=".err"></pre>
   </div>
+  <div class="editor">
+    <div class="javaEditor"></div>
+              <textarea data-disabled.=".selClass ? null : true" style="display: none"
+                        data-watch.=".selClass: .selectClass()"></textarea>
+  </div>
+  <label><input type="checkbox" data-bind.=".preserveLog">Preserve Log</label>
+
+  <pre class="out" data-text.=".out"></pre>
+  <pre class="err" data-text.=".err"></pre>
 </div>
 <!-- build:js({app,.tmp}) scripts/main.js -->
 <script src="cheetajs/cheetajs.js"></script>
+<script src="scripts/messages.js"></script>
 <script src="scripts/main.js"></script>
 <script src="scripts/util.js"></script>
 <script src="../bower_components/codemirror/lib/codemirror.js"></script>

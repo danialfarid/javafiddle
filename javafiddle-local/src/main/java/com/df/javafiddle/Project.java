@@ -1,5 +1,7 @@
 package com.df.javafiddle;
 
+import com.df.javafiddle.compiler.CompilationErrorDetails;
+
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -14,8 +16,8 @@ public class Project {
     public static String MAIN_CLASS_NAME = "Main";
 
     public String id;
-    public Map<String, Lib> libs = new ConcurrentHashMap<String, Lib>();
-    public Map<String, Clazz> classesMap = new ConcurrentHashMap<String, Clazz>();
+    public Map<String, Lib> libs = new ConcurrentHashMap<>();
+    public Map<String, Clazz> classesMap = new ConcurrentHashMap<>();
 
     private DynamicURLClassLoader classLoader;
 
@@ -29,7 +31,14 @@ public class Project {
     }
 
     public Project initClassLoader() {
-        classLoader = new DynamicURLClassLoader(new URL[]{}, Project.class.getClassLoader(), id);
+        String baseFolder = IOUtil.getTempFolder();
+        new File(baseFolder + File.separator + id).mkdirs();
+        try {
+            classLoader = new DynamicURLClassLoader(baseFolder);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+//        classLoader = new DynamicURLClassLoader(new URL[]{new File(baseFolder).toURI().toURL()}, Project.class.getClassLoader(), id);
         return this;
     }
 
@@ -47,18 +56,18 @@ public class Project {
         return libs.get(name);
     }
 
-    public void createClass(Clazz clazz) {
-        classesMap.put(clazz.name, clazz);
-        classLoader.addClass(clazz.name, clazz.src);
+    public CompilationErrorDetails createClass(Clazz clazz) {
+        classesMap.put(id + "." + clazz.name, clazz);
+        return classLoader.addClass(id + "." + clazz.name, clazz.src);
     }
 
-    public void updateClass(Clazz clazz) {
-        createClass(clazz);
+    public CompilationErrorDetails updateClass(Clazz clazz) {
+        return createClass(clazz);
     }
 
     public void removeClass(String className) {
-        classesMap.remove(className);
-        classLoader.remove(className);
+        classesMap.remove(id + "." + className);
+        classLoader.remove(id + "." + className);
     }
 
     public static String readFile(File file) throws IOException {
@@ -105,7 +114,7 @@ public class Project {
 
     public void run() {
         try {
-            classLoader.loadClass(MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
+            classLoader.loadClass(id + "." + MAIN_CLASS_NAME).getMethod("main", String[].class).invoke(null, (Object) null);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

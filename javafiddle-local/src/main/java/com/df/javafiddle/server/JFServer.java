@@ -4,7 +4,8 @@ import com.df.javafiddle.Clazz;
 import com.df.javafiddle.IOUtil;
 import com.df.javafiddle.Lib;
 import com.df.javafiddle.Project;
-import com.df.javafiddle.compiler.CompilationErrorException;
+import com.df.javafiddle.compiler.CompilationErrorDetails;
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -34,6 +35,13 @@ public class JFServer {
     public List<ServiceEndpoint> endpoints = new ArrayList<ServiceEndpoint>();
 
     {
+        endpoints.add(new ServiceEndpoint().init("GET", "/ping").withAction(new ServerAction<String, Void>() {
+            @Override
+            protected String perform(String method, Map<String, String> params, Void obj) {
+                return "OK";
+            }
+        }));
+
         endpoints.add(new ServiceEndpoint().init("POST", "/{id}").withAction(new ServerAction<Void, Void>() {
             @Override
             protected Void perform(String method, Map<String, String> params, Void obj) {
@@ -47,10 +55,9 @@ public class JFServer {
             public String perform(String method, Map<String, String> params, Clazz clazz) {
                 Project project = getProject(params);
                 if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
-                    try {
-                        project.updateClass(clazz);
-                    } catch (CompilationErrorException e) {
-                        return JSON.INSTANCE.stringify(e.compileErrors);
+                    CompilationErrorDetails compilationErrorDetails = project.updateClass(clazz);
+                    if (compilationErrorDetails != null) {
+                        return new Gson().toJson(compilationErrorDetails.compileErrors);
                     }
                 } else if ("DELETE".equalsIgnoreCase(method)) {
                     project.removeClass(clazz.name);
@@ -78,8 +85,6 @@ public class JFServer {
                 Project project = getProject(params);
                 try {
                     project.run();
-                } catch (CompilationErrorException e) {
-                    throw new ServiceException(400, e.compileErrors);
                 } catch (Throwable e) {
                     logger.log(Level.SEVERE, "", e);
                     throw new ServiceException(500, IOUtil.readStack(e));
@@ -148,19 +153,22 @@ public class JFServer {
                 for (ServiceEndpoint endpoint : endpoints) {
                     Map<String, String> varMap = endpoint.matches(method, paths);
                     if (varMap != null) {
-                        Object val = JSON.INSTANCE.parse(content, endpoint.getRequestClass());
+                        Object val = null;
+                        if (content != null && content.length() > 0) {
+                            val = new Gson().fromJson(content, endpoint.getRequestClass());
+                        }
                         try {
                             ServiceEndpoint.Result<Object> result = endpoint.consume(method, varMap, val);
                             if (result.hasResult) {
                                 writeResponse(httpExchange, result.data == null ? null :
-                                                JSON.INSTANCE.stringify(result.data),
+                                                new Gson().toJson(result.data),
                                         "application/json; charset=UTF-8", 200);
                                 return;
                             }
                             writeResponse(httpExchange, "", "text/plain", 200);
                             return;
                         } catch (ServiceException e) {
-                            writeResponse(httpExchange, JSON.INSTANCE.stringify(e.error),
+                            writeResponse(httpExchange, new Gson().toJson(e.error),
                                     "application/json; charset=UTF-8", e.status);
                             return;
                         }

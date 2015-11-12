@@ -12,6 +12,17 @@ Oo.future(function () {
 
   var id = Oo.hash.get() || null;
 
+  var ping = function () {
+    Oo.http.get(localUrl() + 'ping').send().after(function () {
+      jf.clientAlive = true;
+      setTimeout(ping, 10000);
+    }, function () {
+      jf.clientAlive = false;
+      setTimeout(ping, 3000);
+    });
+  };
+  ping();
+
   function createProject() {
     jf.project = new Project().$create(function () {
       jf.localProject = new LocalProject(jf.project).$create();
@@ -207,5 +218,47 @@ Oo.future(function () {
   Oo.http.onError(function (xhr) {
     jf.messages.push(xhr.data);
   });
-
+});
+Oo.directive({
+  name: 'resizable',
+  link: function (elem, attr) {
+    var val = attr.evaluate(), grips = [],
+      style = 'position:absolute;background-color:#DDDDDD;padding:1px;';
+    elem.style.position = 'relative';
+    if (val.indexOf('left') > -1) {
+      grips.push(document.create('<div class="oo-grip" style="' + style + 'left:0;top:0;bottom:0;cursor:col-resize;"></div>'))
+    }
+    if (val.indexOf('right') > -1) {
+      grips.push(document.create('<div class="oo-grip" style="' + style + 'right:0;top:0;bottom:0;cursor:col-resize;"></div>'))
+    }
+    if (val.indexOf('bottom') > -1) {
+      grips.push(document.create('<div class="oo-grip" style="' + style + 'left:0;right:0;bottom:0;cursor:row-resize;"></div>'))
+    }
+    if (val.indexOf('top') > -1) {
+      grips.push(document.create('<div class="oo-grip" style="' + style + 'left:0;right:0;top:0;cursor:row-resize;"></div>'))
+    }
+    grips.forEach(function (grip) {
+      elem.add(grip);
+      grip.on('mousedown', function (e) {
+        var listener, initialX = e.screenX, initialY = e.screenY, width = elem.offsetWidth, height = elem.offsetHeight;
+        listener = document.on('mousemove', function (e) {
+          var deltaX = e.screenX - initialX;
+          var deltaY = e.screenY - initialY;
+          if (grip.style.left === 'inherit') {
+            elem.style.width = (width + delta) + 'px';
+          } else if (grip.style.right === 'inherit') {
+            elem.style.width = (width - delta) + 'px';
+          } else if (grip.style.top === 'inherit') {
+            elem.style.heigth = (height + delta) + 'px';
+          } else if (grip.style.bottom === 'inherit') {
+            elem.style.heigth = (height - delta) + 'px';
+          }
+          elem.style.width = width + (e.screenX - initialX) + "px";
+        });
+        document.on('mouseup', function () {
+          document.off('mousemove', listener);
+        });
+      });
+    });
+  }
 });

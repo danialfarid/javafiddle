@@ -17,6 +17,8 @@ public class DataStore {
 
     char[] alphanumeric = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    char[] letters = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
     public Project createProject() {
         Entity clazz = new Entity("Class");
@@ -24,14 +26,14 @@ public class DataStore {
         clazz.setProperty("id", id);
         clazz.setProperty("name", "Main");
         clazz.setProperty("src",
-                "public class Main {\r\n\tpublic static void main(String args[]) {\r\n\t\t\r\n\t}\r\n}");
+                "package " + id + ";\n\n" + "public class Main {\r\n\tpublic static void main(String args[]) {\r\n\t\t\r\n\t}\r\n}");
         clazz.setProperty("date", new Date());
         dataStore.put(clazz);
         return new Project().init(id);
     }
 
     private String generateId() {
-        return String.valueOf(alphanumeric[random36()]) + alphanumeric[random36()] +
+        return String.valueOf(letters[random36()]) + alphanumeric[random36()] +
                 alphanumeric[random36()] + alphanumeric[random36()] +
                 alphanumeric[random36()] + alphanumeric[random36()];
     }
@@ -76,9 +78,9 @@ public class DataStore {
         clazz.setProperty("id", id);
         clazz.setProperty("name", name);
         String[] split = name.split("\\.");
-        String packageName = "";
+        String packageName = id;
         for (int i = 0; i < split.length - 1; i++) {
-            packageName += (i > 0 ? "." : "") + split[i];
+            packageName += "." + split[i];
         }
         String content = packageName.length() > 0 ? "package " + packageName + ";\r\n\r\n" : "";
         content += "public class " + split[split.length - 1] + " {\r\n\t\r\n}";

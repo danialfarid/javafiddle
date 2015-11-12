@@ -77,8 +77,8 @@ public class Lib {
         } else {
             try {
                 resolvedUrl = this.url == null ? null : new URL(this.url);
-                String fileName = IOUtil.getTempFolderForId(DEFAULT_LIB_DOWNLOAD_FOLDER) +
-                        StringUtil.removeNoneAlphanumeric(this.url, name);
+                String fileName = IOUtil.getTempFolder() + File.separator + DEFAULT_LIB_DOWNLOAD_FOLDER +
+                        File.separator + StringUtil.removeNoneAlphanumeric(this.url, name);
                 IOUtil.downloadUrlToFile(resolvedUrl, fileName);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);

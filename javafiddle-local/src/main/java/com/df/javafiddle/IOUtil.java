@@ -58,8 +58,8 @@ public class IOUtil {
 		}
 	}
 
-	public static String getTempFolderForId(String projectId) {
-		return System.getProperty("java.io.tmpdir") + File.separator + "javafiddle" + File.separator;
+	public static String getTempFolder() {
+		return System.getProperty("java.io.tmpdir") + "javafiddle";
 	}
 
     public static String readStack(Throwable e) {
