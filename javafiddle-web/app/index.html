@@ -32,7 +32,7 @@
         <button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>
       </div>
       <ul class="classes">
-        <li for.="i, clazz: .classes" class.="i==jf.selIndex ? 'selected' : ''"
+        <li for.="i, clazz: filter(.classes, .newClassName)" class.="i==jf.selIndex ? 'selected' : ''"
             onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
           <span text.="clazz.name"></span>
           <a class="remove" onaction.="jf.removeClass(clazz.name)" tabindex="0">&#215</a>

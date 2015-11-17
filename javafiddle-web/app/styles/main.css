@@ -2,7 +2,7 @@
   outline-width: 1px;
 }
 body {
-  mind-width: 1200px;
+  min-width: 1200px;
   font-family: 'Lato', sans-serif;
 }
 .header h2 {
@@ -17,12 +17,11 @@ body {
 }
 .class-sec .search input {
   width: 75%;
+  padding: 5px;
 }
 .class-sec .search button {
   background-color: #0B8873;
   color: white;
-  -webkit-border-radius:;
-  -moz-border-radius:;
   border-radius: 5px;
   padding: 2px 5px;
 }
