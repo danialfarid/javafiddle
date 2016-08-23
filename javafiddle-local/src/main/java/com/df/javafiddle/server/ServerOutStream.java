@@ -1,6 +1,6 @@
 package com.df.javafiddle.server;
 
-import com.df.javafiddle.Project;
+import com.df.javafiddle.model.Project;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

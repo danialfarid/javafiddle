@@ -12,7 +12,7 @@ public class CORSFilter implements Filter {
             ServletException {
         HttpServletResponse httpResp = (HttpServletResponse) resp;
         HttpServletRequest httpReq = (HttpServletRequest) req;
-        httpResp.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+        httpResp.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
         httpResp.setHeader("Access-Control-Allow-Origin", "*");
         httpResp.setHeader("Access-Control-Allow-Headers", "*");
         if (httpReq.getMethod().equalsIgnoreCase("OPTIONS")) {

@@ -1,6 +1,7 @@
-package com.df.javafiddle;
+package com.df.javafiddle.model;
 
 public class Clazz {
+	public String id;
 	public String name;
 	public String src;
 

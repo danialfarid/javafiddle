@@ -1,35 +1,50 @@
 package com.df.javafiddle;
 
 
-import com.google.appengine.api.datastore.*;
+import com.df.javafiddle.dbmap.DBMapper;
+import com.df.javafiddle.model.Clazz;
+import com.df.javafiddle.model.Lib;
+import com.df.javafiddle.model.Project;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import static com.google.appengine.api.datastore.Query.*;
+import static com.mongodb.client.model.Filters.eq;
 
 public class DataStore {
 
     public static DataStore INSTANCE = new DataStore();
 
-    protected DatastoreService dataStore = DatastoreServiceFactory.getDatastoreService();
+    MongoClient mongo = new MongoClient("localhost", 27017);
+    MongoDatabase db = mongo.getDatabase("javafiddle");
+    MongoCollection<Document> projects = db.getCollection("project");
+    MongoCollection<Document> libs = db.getCollection("libs");
+    public static final UpdateOptions UPSERT = new UpdateOptions().upsert(true);
 
     char[] alphanumeric = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    char[] letters = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+    char[] letters = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-    public Project createProject() {
-        Entity clazz = new Entity("Class");
-        String id = generateId();
-        clazz.setProperty("id", id);
-        clazz.setProperty("name", "Main");
-        clazz.setProperty("src",
-                "package " + id + ";\n\n" + "public class Main {\r\n\tpublic static void main(String args[]) {\r\n\t\t\r\n\t}\r\n}");
-        clazz.setProperty("date", new Date());
-        dataStore.put(clazz);
-        return new Project().init(id);
+    public Project createProject(String id) {
+        if (id != null) {
+            Project project = findProject(id);
+            if (project != null) {
+                return project;
+            }
+        }
+        Project project = new Project().init("");
+        project.id = id == null ? generateId() : id;
+        Clazz defaultClass = project.createDefaultClass();
+        defaultClass.id = new ObjectId().toString();
+        project.classes.add(defaultClass);
+
+        projects.insertOne(DBMapper.INSTANCE.toDocument(project));
+        return project;
     }
 
     private String generateId() {
@@ -42,103 +57,125 @@ public class DataStore {
         return (int) (36 * Math.random());
     }
 
-    public List<Clazz> getClasses(String id) {
-        List<Clazz> classes = new ArrayList<>();
-        Filter idFilter = new FilterPredicate("id", FilterOperator.EQUAL, id);
-
-        Query q = new Query("Class").setFilter(idFilter);
-        PreparedQuery pq = dataStore.prepare(q);
-
-        for (Entity result : pq.asIterable()) {
-            String name = (String) result.getProperty("name");
-            String src = (String) result.getProperty("src");
-            classes.add(new Clazz().init(name, src));
+    public Project findProject(String id) {
+        Document document = projects.find(eq("id", id)).first();
+        if (document == null) {
+            return null;
         }
-        return classes;
+        return DBMapper.INSTANCE.toObject(new Project(), document);
     }
 
-    public List<Lib> getLibs(String id) {
-        List<Lib> libs = new ArrayList<>();
-        Filter idFilter = new FilterPredicate("id", FilterOperator.EQUAL, id);
-
-        Query q = new Query("Lib").setFilter(idFilter);
-        PreparedQuery pq = dataStore.prepare(q);
-
-        for (Entity result : pq.asIterable()) {
-            String name = (String) result.getProperty("name");
-            String url = (String) result.getProperty("url");
-            libs.add(new Lib().init(name, url));
+    public Lib findLib(String id) {
+        Document document = projects.find(eq("_id", id)).first();
+        if (document == null) {
+            return null;
         }
-        return libs;
+        return DBMapper.INSTANCE.toObject(new Lib(), document);
     }
 
-    public String createClass(String id, String name) {
-        deleteClass(id, name);
-        Entity clazz = new Entity("Class");
-        clazz.setProperty("id", id);
-        clazz.setProperty("name", name);
-        String[] split = name.split("\\.");
-        String packageName = id;
-        for (int i = 0; i < split.length - 1; i++) {
-            packageName += "." + split[i];
-        }
-        String content = packageName.length() > 0 ? "package " + packageName + ";\r\n\r\n" : "";
-        content += "public class " + split[split.length - 1] + " {\r\n\t\r\n}";
-        clazz.setProperty("src", content);
-        clazz.setProperty("date", new Date());
-        dataStore.put(clazz);
-        return content;
+    public Lib createLib(Lib lib) {
+        Document document = DBMapper.INSTANCE.toDocument(lib);
+        libs.updateOne(document, new Document("$set", document), UPSERT);
+        lib.id = libs.find(document).first().getObjectId("_id").toString();
+        return lib;
     }
 
-    public String createLib(String id, String name, String url) {
-        deleteLib(id, name);
-        Entity lib = new Entity("Lib");
-        lib.setProperty("id", id);
-        lib.setProperty("name", name);
-        lib.setProperty("url", url);
-        lib.setProperty("date", new Date());
-        dataStore.put(lib);
+    public void addLibToProject(String projectId, String libId) {
+        projects.updateOne(new Document("id", projectId),
+                new Document("$push", new BasicDBObject("libs", libId)),
+                UPSERT);
+    }
+
+    public void updateClass(String id, Clazz clazz) {
+        projects.updateOne(new Document("id", id).append("classes.id", clazz.id),
+                new Document("$set", new BasicDBObject("classes.$", clazz)),
+                UPSERT);
+    }
+
+//    protected Entity getLibEntity(String pkg, String name, String version) {
+//        if (version != null) {
+//            Entity entity = getLibExactVersion(pkg, name, version);
+//            if (entity != null) return entity;
+//        } else {
+//            version = "";
+//        }
+//
+//        Query q = new Query("Class");
+//        q.addFilter("name", FilterOperator.EQUAL, name);
+//        Iterable<Entity> entities = dataStore.prepare(q).asIterable();
+//        String latestVersion = "";
+//        Entity latestEntity = null;
+//        for (Entity entity : entities) {
+//            String v = (String) entity.getProperty("version");
+//            if (v.startsWith(version)) {
+//                if (isGreaterVersion(latestVersion, v)) {
+//                    latestVersion = v;
+//                    latestEntity = entity;
+//                }
+//            }
+//        }
+//        if (!latestVersion.equals("")) {
+//            return latestEntity;
+//        }
+//        return null;
+//    }
+//
+//    protected boolean isGreaterVersion(String v1, String v2) {
+//        String s1 = v1.replaceAll("[^0-9\\.]+", "");
+//        String s2 = v2.replaceAll("[^0-9\\.]+", "");
+//        return s2.length() > s1.length() || s2.compareTo(s1) > 0;
+//    }
+
+    public String addLib(String id, String name, String url) {
+//        deleteLib(id, name);
+//        Entity lib = new Entity("Lib");
+//        lib.setProperty("id", id);
+//        lib.setProperty("name", name);
+//        lib.setProperty("url", url);
+//        lib.setProperty("date", new Date());
+//        dataStore.put(lib);
         return name;
     }
 
     public void updateClass(String id, String name, String src) {
-        Filter filter = CompositeFilterOperator.and(new FilterPredicate("id", FilterOperator.EQUAL, id),
-                new FilterPredicate("name", FilterOperator.EQUAL, name));
-
-        Query q = new Query("Class").setFilter(filter);
-        Entity result = dataStore.prepare(q).asSingleEntity();
-
-        result.setProperty("src", src);
-        dataStore.put(result);
+//        Filter filter = CompositeFilterOperator.and(new FilterPredicate("id", FilterOperator.EQUAL, id),
+//                new FilterPredicate("name", FilterOperator.EQUAL, name));
+//
+//        Query q = new Query("Class").setFilter(filter);
+//        Entity result = dataStore.prepare(q).asSingleEntity();
+//
+//        result.setProperty("src", src);
+//        dataStore.put(result);
     }
 
     public void deleteClass(String id, String name) {
-        Filter filter = CompositeFilterOperator.and(new FilterPredicate("id", FilterOperator.EQUAL, id),
-                new FilterPredicate("name", FilterOperator.EQUAL, name));
-
-        Query q = new Query("Class").setFilter(filter);
-        Iterable<Entity> result = dataStore.prepare(q).asIterable();
-        for (Entity entity : result) {
-            dataStore.delete(entity.getKey());
-        }
+//        Filter filter = CompositeFilterOperator.and(new FilterPredicate("id", FilterOperator.EQUAL, id),
+//                new FilterPredicate("name", FilterOperator.EQUAL, name));
+//
+//        Query q = new Query("Class").setFilter(filter);
+//        Iterable<Entity> result = dataStore.prepare(q).asIterable();
+//        for (Entity entity : result) {
+//            dataStore.delete(entity.getKey());
+//        }
     }
 
     public void deleteLib(String id, String name) {
-        Filter filter = CompositeFilterOperator.and(new FilterPredicate("id", FilterOperator.EQUAL, id),
-                new FilterPredicate("name", FilterOperator.EQUAL, name));
-
-        Query q = new Query("Lib").setFilter(filter);
-        Iterable<Entity> result = dataStore.prepare(q).asIterable();
-        for (Entity entity : result) {
-            dataStore.delete(entity.getKey());
-        }
+//        Filter filter = CompositeFilterOperator.and(new FilterPredicate("id", FilterOperator.EQUAL, id),
+//                new FilterPredicate("name", FilterOperator.EQUAL, name));
+//
+//        Query q = new Query("Lib").setFilter(filter);
+//        Iterable<Entity> result = dataStore.prepare(q).asIterable();
+//        for (Entity entity : result) {
+//            dataStore.delete(entity.getKey());
+//        }
     }
 
     public boolean getProject(String id) {
-        Filter filter = new FilterPredicate("id", FilterOperator.EQUAL, id);
-
-        Query q = new Query("Class").setFilter(filter);
-        int count = dataStore.prepare(q).countEntities(FetchOptions.Builder.withDefaults());
-        return count > 0;
+//        Filter filter = new FilterPredicate("id", FilterOperator.EQUAL, id);
+//
+//        Query q = new Query("Class").setFilter(filter);
+//        int count = dataStore.prepare(q).countEntities(FetchOptions.Builder.withDefaults());
+//        return count > 0;
+        return false;
     }
 }

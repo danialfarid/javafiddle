@@ -1,5 +1,7 @@
-package com.df.javafiddle;
+package com.df.javafiddle.model;
 
+import com.df.javafiddle.IOUtil;
+import com.df.javafiddle.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -12,17 +14,25 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Lib {
 	private static final String DEFAULT_LIB_DOWNLOAD_FOLDER = "javafiddle-libs";
 
 	public static String MAVEN_URL = "http://repo.maven.apache.org/maven2/";
 
+	public String id;
+	public String pkg;
 	public String name;
-	public String url;
+    public String version;
+    public String url;
+    public List<String> dependencies = new ArrayList<>();
 
-	public Lib init(String name, String url) {
-		this.name = name;
+	public Lib init(String pkg, String name, String version, String url) {
+        this.pkg = pkg;
+        this.name = name;
+        this.version = version;
         this.url = url;
 		return this;
 	}
@@ -32,12 +42,6 @@ public class Lib {
         if ("maven".equalsIgnoreCase(this.url)) {
             if (name.endsWith(".jar")) {
                 name = name.substring(0, name.length() - 4);
-            }
-            String version = "";
-            int hashIndex = name.lastIndexOf("#");
-            if (hashIndex > -1) {
-                version = name.substring(hashIndex + 1);
-                name = name.substring(0, hashIndex);
             }
 
             String basePath = name.replace('.', '/');
@@ -102,4 +106,7 @@ public class Lib {
 		return System.getProperty("user.home") + "/.m2/repository";
 	}
 
+    public void addDependency(String id) {
+        dependencies.add(id);
+    }
 }

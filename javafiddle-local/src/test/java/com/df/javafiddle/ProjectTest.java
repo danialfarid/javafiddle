@@ -1,5 +1,7 @@
 package com.df.javafiddle;
 
+import com.df.javafiddle.model.Clazz;
+import com.df.javafiddle.model.Project;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -9,7 +11,7 @@ public class ProjectTest {
 	@Test
 	public void testExternalLib() {
 		Project project = new Project().init("1");
-		project.createLib(new Lib().init("com.google.guava.guava#18.0", "maven"));
+//		project.createLib(new Lib().init("com.google.guava.guava", "18.0", "maven"));
 		project.updateClass(new Clazz().init("Main", "import com.google.common.collect.Maps;"
                 + "public class Main {\r\n\tpublic static void main(String args[]) {"
                 + "System.out.println(\"aaa\");"
@@ -21,7 +23,7 @@ public class ProjectTest {
 	@Test
 	public void testPackage() {
 		Project project = new Project().init("1");
-		project.createLib(new Lib().init("com.google.guava.guava#18.0", "maven"));
+//		project.createLib(new Lib().init("com.google.guava.guava", "18.0", "maven"));
 		project.createClass(new Clazz().init("Main", "package com.df.test; import com.df.test.A;"
 				+ "public class Main {\r\n\tpublic static void main(String args[]) {"
 				+ "System.out.println(new A());"

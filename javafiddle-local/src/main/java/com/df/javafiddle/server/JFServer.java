@@ -1,9 +1,9 @@
 package com.df.javafiddle.server;
 
-import com.df.javafiddle.Clazz;
+import com.df.javafiddle.model.Clazz;
 import com.df.javafiddle.IOUtil;
-import com.df.javafiddle.Lib;
-import com.df.javafiddle.Project;
+import com.df.javafiddle.model.Lib;
+import com.df.javafiddle.model.Project;
 import com.df.javafiddle.compiler.CompilationErrorDetails;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -60,7 +60,7 @@ public class JFServer {
                         return new Gson().toJson(compilationErrorDetails.compileErrors);
                     }
                 } else if ("DELETE".equalsIgnoreCase(method)) {
-                    project.removeClass(clazz.name);
+//                    project.removeClass(clazz.id);
                 }
                 return null;
             }
@@ -71,9 +71,9 @@ public class JFServer {
             public Void perform(String method, Map<String, String> params, Lib lib) {
                 Project project = getProject(params);
                 if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
-                    project.createLib(lib);
+//                    project.createLib(lib);
                 } else if ("DELETE".equalsIgnoreCase(method)) {
-                    project.removeClass(lib.name);
+//                    project.removeClass(lib.name);
                 }
                 return null;
             }
@@ -155,7 +155,11 @@ public class JFServer {
                     if (varMap != null) {
                         Object val = null;
                         if (content != null && content.length() > 0) {
-                            val = new Gson().fromJson(content, endpoint.getRequestClass());
+                            if (endpoint.getRequestClass() != null) {
+                                val = new Gson().fromJson(content, endpoint.getRequestClass());
+                            } else {
+                                val = null;
+                            }
                         }
                         try {
                             ServiceEndpoint.Result<Object> result = endpoint.consume(method, varMap, val);

@@ -1,6 +1,9 @@
 package com.df.javafiddle;
 
+import com.df.javafiddle.model.Project;
+
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -14,7 +17,13 @@ public class IOUtil {
 	}
 
 	public static String readURL(URL url) throws IOException {
-		return readStream(url.openStream());
+		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'");
+		return readStream(connection.getInputStream());
+	}
+
+	public static String readURL(String url) throws IOException {
+		return readURL(new URL(url));
 	}
 
 	public static String readStream(InputStream is) throws IOException {
@@ -26,7 +35,7 @@ public class IOUtil {
 	}
 
 	public static byte[] readStreamAsBytes(InputStream is) throws IOException {
-		int c = 0;
+		int c;
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		byte[] buffer = new byte[2048];
 		while ((c = is.read(buffer)) > 0) {
@@ -48,12 +57,10 @@ public class IOUtil {
 		if (!file.exists()) {
 			ReadableByteChannel rbc;
 			rbc = Channels.newChannel(url.openStream());
+			//noinspection ResultOfMethodCallIgnored
 			file.getParentFile().mkdirs();
-			FileOutputStream fos = new FileOutputStream(file);
-			try {
+			try (FileOutputStream fos = new FileOutputStream(file)) {
 				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			} finally {
-				fos.close();
 			}
 		}
 	}
@@ -71,7 +78,7 @@ public class IOUtil {
 			}
 		}
 
-		e.setStackTrace(traceElementList.toArray(new StackTraceElement[0]));
+		e.setStackTrace(traceElementList.toArray(new StackTraceElement[traceElementList.size()]));
         StringWriter stringWriter = new StringWriter();
 		e.printStackTrace(new PrintWriter(stringWriter));
         return stringWriter.toString();

@@ -32,7 +32,8 @@
         <button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>
       </div>
       <ul class="classes">
-        <li for.="i, clazz: filter(.classes, .newClassName)" class.="i==jf.selIndex ? 'selected' : ''"
+        <li for.="i, clazz: filter(.project.classes, .newClassName, {sort:true, field:'name'})"
+            class.="i==jf.selIndex ? 'selected' : ''"
             onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
           <span text.="clazz.name"></span>
           <a class="remove" onaction.="jf.removeClass(clazz.name)" tabindex="0">&#215</a>
@@ -57,7 +58,7 @@
         </div>
       </div>
       <ul class="libs">
-        <li data-for.="lib: .libs">
+        <li data-for.="lib: .project.libs">
           <div data-text.="lib.name" data-title.="lib.url"></div>
           <span data-text.="'#latest: (' + lib.version + ')'"></span>
 
@@ -90,7 +91,7 @@
 
 <!-- build:dev() dev.js -->
 <script>
-  window.jfApiUrl = 'http://localhost:8888/_ah/api/jf/v1/p/';
+  window.jfApiUrl = 'http://localhost:8080/r/p/';
 </script>
 <!-- endbuild -->
 

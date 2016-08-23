@@ -26,7 +26,7 @@ Oo.future(function () {
   function createProject() {
     jf.project = new Project().$create(function () {
       jf.localProject = new LocalProject(jf.project).$create();
-      jf.initializeProject(jf.project.id);
+      jf.initializeProject();
       //window.history.pushState(null, null, '/' + jf.project.id);
       Oo.hash.set(jf.project.id);
     });
@@ -35,7 +35,7 @@ Oo.future(function () {
   if (id != null) {
     jf.project = new Project({id: id}).$get(function () {
       jf.localProject = new LocalProject(jf.project).$create();
-      jf.initializeProject(jf.project.id);
+      jf.initializeProject();
       pollLogs();
     }, function () {
       createProject();
@@ -44,25 +44,21 @@ Oo.future(function () {
     createProject();
   }
 
-  jf.initializeProject = function (id) {
-    Project.Class = Oo.resource(apiBase + id + '/class');
-    Project.Lib = Oo.resource(apiBase + id + '/lib');
-    LocalProject.Class = Oo.resource(localUrl() + id + '/class');
-    LocalProject.Lib = Oo.resource(localUrl() + id + '/lib');
+  jf.initializeProject = function () {
+    Project.Class = Oo.resource(apiBase + jf.project.id + '/class');
+    Project.Lib = Oo.resource(apiBase + jf.project.id + '/lib');
+    LocalProject.Class = Oo.resource(localUrl() + jf.project.id + '/class');
+    LocalProject.Lib = Oo.resource(localUrl() + jf.project.id + '/lib');
 
     jf.classesMap = {};
-    jf.classes = Project.Class.$query(null, 'items').after(function () {
-      for (var i = 0; i < jf.classes.length; i++) {
-        jf.classesMap[jf.classes[i].name] = jf.classes[i];
-        new LocalProject.Class(jf.classes[i]).$create();
-      }
+    jf.project.classes.forEach(function (c) {
+      jf.classesMap[c.id] = c;
+      new LocalProject.Class(c).$create();
     });
     jf.libsMap = {};
-    jf.libs = Project.Lib.$query(null, 'items').after(function () {
-      for (var j = 0; j < jf.libs.length; j++) {
-        jf.libsMap[jf.libs[j].name] = jf.libs[j];
-        new LocalProject.Lib(jf.libs[j]).$create();
-      }
+    jf.project.libs.forEach(function (c) {
+      jf.libsMap[c.id] = c;
+      new LocalProject.Lib(c).$create();
     });
   };
 
