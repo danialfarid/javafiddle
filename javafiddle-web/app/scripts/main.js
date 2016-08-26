@@ -60,18 +60,7 @@ Oo.future(function () {
       jf.libsMap[c.id] = c;
       new LocalProject.Lib(c).$create();
     });
-  };
-
-  jf.addClass = function (name) {
-    if (jf.classesMap[name]) {
-      window.alert('Class name already exists: ' + name);
-      return;
-    }
-    var newClass = new Project.Class({name: name}).$create(function () {
-      jf.classes.push(newClass);
-      jf.classesMap[newClass.name] = newClass;
-      new LocalProject.Class(newClass).$create();
-    });
+    jf.fileTree = jf.makeFileTree(jf.project);
   };
 
   jf.removeClass = function (name) {
@@ -91,7 +80,8 @@ Oo.future(function () {
   };
 
   jf.updateClass = DF.util.runFixedRate(function (clazz) {
-    clazz.$update();
+    new Project.Class(clazz).$update();
+    // project.$update();
     new LocalProject.Class(clazz).$update(function (resp) {
       var errors = [];
       if (resp && resp.length) {
@@ -113,7 +103,6 @@ Oo.future(function () {
       return;
     }
     var newLib = new Project.Lib({name: name, url: url}).$create(function () {
-      jf.libs.push(newLib);
       jf.libsMap[newLib.name] = newLib;
       new LocalProject.Lib(newLib).$create();
     });
@@ -202,10 +191,10 @@ Oo.future(function () {
   });
 
   jf.selectClass = function () {
-    if (jf.selClass && jf.selClass.src) {
+    if (jf.selClass) {
       javaEditor.setOption('readOnly', false);
       jf.updateClass(jf.selClass);
-      javaEditor.setValue(jf.selClass.src);
+      javaEditor.setValue(jf.selClass.src || '\r\n');
       javaEditor.clearHistory();
     }
   };

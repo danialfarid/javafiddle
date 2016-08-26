@@ -1,65 +1,93 @@
 * {
   outline-width: 1px;
 }
+
 body {
   min-width: 1200px;
   font-family: 'Lato', sans-serif;
 }
+
 .header h2 {
   color: #2b81af;
 }
+
 .offline {
   color: darkred;
 }
+
 .class-sec, .class-sec .search, .class-sec .search input {
   background: midnightblue;
   color: white;
 }
+
 .class-sec .search input {
   width: 75%;
   padding: 5px;
 }
+
 .class-sec .search button {
   background-color: #0B8873;
   color: white;
   border-radius: 5px;
   padding: 2px 5px;
 }
+
 .class-sec .search {
   width: 100%;
 }
+
 .class-sec ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .class-sec ul li, .class-sec .search {
   font-size: 15px;
   padding: 2px 5px;
   cursor: pointer;
 }
+
 .class-sec ul li.selected {
   background-color: #2b81af;
 }
-.class-sec ul li .remove {
+
+.tree-pkg .gadget {
+  display: none;
+  color: white;
   position: absolute;
+  right: 5px;
+}
+.tree-pkg:hover .gadget {
+  display: inline-block;
+}
+
+.tree-pkg .gadget a {
+  margin: 2px;
+}
+
+.class-sec ul li:hover .remove {
   right: 5px;
 }
 
 .side-panel {
-  display: inline-block;
+  display: table-cell;
   vertical-align: top;
   overflow-y: auto;
-  width: 400px;
+  min-width: 400px;
 }
+
 .editor {
-  display: inline-block;
+  display: table-cell;
   vertical-align: top;
   border: 1px solid #DDDDDD;
+  width: 100%;
 }
+
 .top-panel {
   float: right;
 }
+
 .run {
   padding: 10px 25px;
   font-size: large;
@@ -68,28 +96,34 @@ body {
   color: white;
   margin-right: 7px;
 }
+
 .run:disabled {
   background-color: #CCCCCC;
 }
+
 a {
   text-decoration: none;
-  color:#216C84;
+  color: #216C84;
+  cursor: pointer;
 }
+
 .client {
-  font-size:smaller;
+  font-size: smaller;
 }
-.class-sec>.button{
-	display: inline-block;
+
+.class-sec > .button {
+  display: inline-block;
 }
 
 .java-src textarea {
-	width: 800px;
-	height: 400px;
+  width: 800px;
+  height: 400px;
 }
 
 .err {
-	color: red;
+  color: red;
 }
+
 /*
 .editor {
 	border: 1px solid green;

@@ -6,11 +6,13 @@ import com.df.javafiddle.model.Clazz;
 import com.df.javafiddle.model.Lib;
 import com.df.javafiddle.model.Project;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import java.io.IOException;
 
 @Path("/")
 @Produces("application/json")
+@Consumes("application/json")
 public class API {
 
     @Path("/p/{id}")
@@ -26,7 +28,11 @@ public class API {
     @Path("/p")
     @POST
     public Project createProject() {
-        return DataStore.INSTANCE.createProject(null);
+        Project project = new Project().init(null);
+        Clazz defaultClass = Clazz.defaultMainClass(project.id);
+        project.classes.add(defaultClass);
+
+        return DataStore.INSTANCE.createProject(project);
     }
 
     @Path("/lib/{id}")
@@ -37,7 +43,17 @@ public class API {
 
     @Path("/p/{id}/class")
     @POST
-    public Clazz createClass(@PathParam("id") String id, Clazz clazz) {
+    public Clazz createClass(@NotNull @PathParam("id") String id, Clazz clazz) {
+        assert clazz.name != null;
+        clazz = Clazz.defaultClass(id, clazz.name);
+        DataStore.INSTANCE.createClass(id, clazz);
+        return clazz;
+    }
+
+    @Path("/p/{id}/class")
+    @PUT
+    public Clazz updateClass(@NotNull @PathParam("id") String id, Clazz clazz) {
+        assert clazz.id != null;
         DataStore.INSTANCE.updateClass(id, clazz);
         return clazz;
     }
@@ -49,11 +65,6 @@ public class API {
         return lib;
     }
 
-    @Path("/p/{id}/class")
-    @PUT
-    public void updateClass(@PathParam("id") String id, Clazz clazz) {
-        DataStore.INSTANCE.updateClass(id, clazz);
-    }
     @Path("/p/{id}/class")
     @DELETE
     public void deleteClass(@PathParam("id") String id, Clazz clazz) {

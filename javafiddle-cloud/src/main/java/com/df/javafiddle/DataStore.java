@@ -11,7 +11,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -25,37 +24,16 @@ public class DataStore {
     MongoCollection<Document> libs = db.getCollection("libs");
     public static final UpdateOptions UPSERT = new UpdateOptions().upsert(true);
 
-    char[] alphanumeric = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    char[] letters = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-
-    public Project createProject(String id) {
-        if (id != null) {
-            Project project = findProject(id);
-            if (project != null) {
-                return project;
-            }
+    public Project createProject(Project project) {
+        assert project.id != null;
+        Project exists = findProject(project.id);
+        if (exists != null) {
+            return exists;
         }
-        Project project = new Project().init("");
-        project.id = id == null ? generateId() : id;
-        Clazz defaultClass = project.createDefaultClass();
-        defaultClass.id = new ObjectId().toString();
-        project.classes.add(defaultClass);
-
         projects.insertOne(DBMapper.INSTANCE.toDocument(project));
         return project;
     }
 
-    private String generateId() {
-        return String.valueOf(letters[random36()]) + alphanumeric[random36()] +
-                alphanumeric[random36()] + alphanumeric[random36()] +
-                alphanumeric[random36()] + alphanumeric[random36()];
-    }
-
-    protected int random36() {
-        return (int) (36 * Math.random());
-    }
 
     public Project findProject(String id) {
         Document document = projects.find(eq("id", id)).first();
@@ -88,8 +66,12 @@ public class DataStore {
 
     public void updateClass(String id, Clazz clazz) {
         projects.updateOne(new Document("id", id).append("classes.id", clazz.id),
-                new Document("$set", new BasicDBObject("classes.$", clazz)),
-                UPSERT);
+                new Document("$set", new BasicDBObject("classes.$", DBMapper.INSTANCE.toDocument(clazz))));
+    }
+
+    public void createClass(String id, Clazz clazz) {
+        projects.updateOne(new Document("id", id),
+                new Document("$push", new BasicDBObject("classes", DBMapper.INSTANCE.toDocument(clazz))));
     }
 
 //    protected Entity getLibEntity(String pkg, String name, String version) {

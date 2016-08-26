@@ -24,22 +24,7 @@
     <h2 text.="messages.title"></h2>
   </div>
   <div class="side-panel" resizable.="'right'">
-    <div class="class-sec">
-      <div class="search">
-        <label>
-          <input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">
-        </label>
-        <button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>
-      </div>
-      <ul class="classes">
-        <li for.="i, clazz: filter(.project.classes, .newClassName, {sort:true, field:'name'})"
-            class.="i==jf.selIndex ? 'selected' : ''"
-            onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
-          <span text.="clazz.name"></span>
-          <a class="remove" onaction.="jf.removeClass(clazz.name)" tabindex="0">&#215</a>
-        </li>
-      </ul>
-    </div>
+    <div view.="'views/filetree.html'"></div>
     <div class="lib-sec">
       <div class="button" data-onaction.=".showAddLib=true" tabindex="0">+</div>
       <div class="add-lib" data-show.=".showAddLib" data-init.='.showAddLib = false'
@@ -80,6 +65,7 @@
 <!-- build:js({app,.tmp}) scripts/main.js -->
 <script src="cheetajs/cheetajs.js"></script>
 <script src="scripts/messages.js"></script>
+<script src="scripts/filetree.js"></script>
 <script src="scripts/main.js"></script>
 <script src="scripts/util.js"></script>
 <script src="../bower_components/codemirror/lib/codemirror.js"></script>

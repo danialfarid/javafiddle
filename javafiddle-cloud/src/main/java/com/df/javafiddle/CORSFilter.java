@@ -16,6 +16,7 @@ public class CORSFilter implements Filter {
         httpResp.setHeader("Access-Control-Allow-Origin", "*");
         httpResp.setHeader("Access-Control-Allow-Headers", "*");
         if (httpReq.getMethod().equalsIgnoreCase("OPTIONS")) {
+            httpResp.setHeader("Access-Control-Allow-Headers", ((HttpServletRequest) req).getHeader("Access-Control-Request-Headers"));
             httpResp.setStatus(HttpServletResponse.SC_OK);
             return;
         }

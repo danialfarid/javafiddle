@@ -13,6 +13,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Project {
 
+    static char[] alphanumeric = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    static char[] letters = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+
     public static ConcurrentHashMap<String, Project> allProjects = new ConcurrentHashMap<>();
 
     public static String MAIN_CLASS_NAME = "Main";
@@ -28,6 +33,9 @@ public class Project {
     }
 
     public Project init(String id) {
+        if (id == null) {
+            id = generateId();
+        }
         this.id = id;
         allProjects.put(id, this);
         return this;
@@ -63,12 +71,6 @@ public class Project {
         return classLoader.addClass(id + "." + clazz.name, clazz.src);
     }
 
-    public Clazz createDefaultClass() {
-        return new Clazz().init("Main",
-                "package " + id + ";\n\n" +
-                        "public class Main {\r\n\tpublic static void main(String args[]) {\r\n\t\t\r\n\t}\r\n}");
-    }
-
     public CompilationErrorDetails updateClass(Clazz clazz) {
         return createClass(clazz);
     }
@@ -88,5 +90,15 @@ public class Project {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    protected String generateId() {
+        return "" + random(letters) + random(alphanumeric) +
+                random(alphanumeric) + random(alphanumeric) + random(alphanumeric) + random(alphanumeric);
+    }
+
+    protected char random(char[] c) {
+        return c[(int) (c.length * Math.random())];
     }
 }
