@@ -1,9 +1,13 @@
 <script type="html/template" id="file_tree_item">
-  <div class="tree-pkg" tabindex="0">
-    <span text.="pkg.name"></span>
+  <div class="tree-pkg">
+    <span text.="pkg.name" tabindex="0"
+          ondblclick.="jf.startRename(pkg)" show.="!pkg.rename"></span>
+    <input type="text" bind.="pkg.newName" if.="pkg.rename"
+           watch.="pkg.rename: jf.focus(this)"
+           onblur.onkeydown-enter.="jf.renamePackage(pkg, pkg.newName);" onfocus.="this.select()">
     <div class="gadget">
-      <a class="addPkg" tabindex="0" onaction.="jf.addPackage(pkg.ref)">+</a>
-      <a class="add" tabindex="0" onaction.="jf.addClass(pkg, pkg.name)">+</a>
+      <a class="addPkg" tabindex="0" onaction.="jf.addPackage(pkg, 'untitled')">+</a>
+      <a class="add" tabindex="0" onaction.="jf.addClass(pkg)">+</a>
       <a class="remove" tabindex="0" onaction.="jf.removePackage(pkg.ref)">&#215</a>
     </div>
   </div>
@@ -11,11 +15,13 @@
     <li for.="pkg: pkg.packages" view.="'file_tree_item'"></li>
   </ul>
   <ul>
-    <li for.="clazz: pkg.classes" class.="i==jf.selIndex ? 'selected' : ''"
-        onaction.="jf.selClass=clazz; jf.selIndex=i" tabindex="0">
-      <span text.="clazz.name" show.="!clazz.edit"></span>
-      <input type="text" bind.="clazz.name" show.="clazz.edit" onkeydown-enter.="jf.renameClass(clazz.name);">
-      <a class="remove" onaction.="jf.removeClass(clazz.ref)" tabindex="0">&#215</a>
+    <li for.="classNode: pkg.classes" class.="classNode==jf.currClassNode ? 'selected' : ''"
+        onaction.="jf.currClassNode=classNode" tabindex="0" ondblclick.="jf.startRename(classNode)">
+      <span text.="classNode.name" show.="!classNode.rename"></span>
+      <input type="text" bind.="classNode.newName" if.="classNode.rename"
+             watch.="classNode.rename: jf.focus(this)"
+             onblur.onkeydown-enter.="jf.renameClass(classNode);" onfocus.="this.select()">
+      <a class="remove" onaction.="jf.removeClass(classNode)" tabindex="0">&#215</a>
     </li>
   </ul>
 </script>

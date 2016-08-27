@@ -7,8 +7,8 @@ Oo.future(function () {
   };
   var apiBase = (window.jfApiUrl || '/');
 
-  var Project = Oo.resource(apiBase + '{:id}');
-  var LocalProject = Oo.resource(localUrl() + '{:id}');
+  jf.Project = Oo.resource(apiBase + '{:id}');
+  jf.LocalProject = Oo.resource(localUrl() + '{:id}');
 
   var id = Oo.hash.get() || null;
 
@@ -24,8 +24,8 @@ Oo.future(function () {
   ping();
 
   function createProject() {
-    jf.project = new Project().$create(function () {
-      jf.localProject = new LocalProject(jf.project).$create();
+    jf.project = new jf.Project().$create(function () {
+      jf.localProject = new jf.LocalProject(jf.project).$create();
       jf.initializeProject();
       //window.history.pushState(null, null, '/' + jf.project.id);
       Oo.hash.set(jf.project.id);
@@ -33,8 +33,8 @@ Oo.future(function () {
   }
 
   if (id != null) {
-    jf.project = new Project({id: id}).$get(function () {
-      jf.localProject = new LocalProject(jf.project).$create();
+    jf.project = new jf.Project({id: id}).$get(function () {
+      jf.localProject = new jf.LocalProject(jf.project).$create();
       jf.initializeProject();
       pollLogs();
     }, function () {
@@ -45,20 +45,20 @@ Oo.future(function () {
   }
 
   jf.initializeProject = function () {
-    Project.Class = Oo.resource(apiBase + jf.project.id + '/class');
-    Project.Lib = Oo.resource(apiBase + jf.project.id + '/lib');
-    LocalProject.Class = Oo.resource(localUrl() + jf.project.id + '/class');
-    LocalProject.Lib = Oo.resource(localUrl() + jf.project.id + '/lib');
+    jf.Project.Class = Oo.resource(apiBase + jf.project.id + '/class');
+    jf.Project.Lib = Oo.resource(apiBase + jf.project.id + '/lib');
+    jf.LocalProject.Class = Oo.resource(localUrl() + jf.project.id + '/class');
+    jf.LocalProject.Lib = Oo.resource(localUrl() + jf.project.id + '/lib');
 
     jf.classesMap = {};
     jf.project.classes.forEach(function (c) {
       jf.classesMap[c.id] = c;
-      new LocalProject.Class(c).$create();
+      new jf.LocalProject.Class(c).$create();
     });
     jf.libsMap = {};
     jf.project.libs.forEach(function (c) {
       jf.libsMap[c.id] = c;
-      new LocalProject.Lib(c).$create();
+      new jf.LocalProject.Lib(c).$create();
     });
     jf.fileTree = jf.makeFileTree(jf.project);
   };
@@ -75,14 +75,13 @@ Oo.future(function () {
         }
         delete jf.classesMap[name];
       });
-      new LocalProject.Class(clazz).$remove();
+      new jf.LocalProject.Class(clazz).$remove();
     }
   };
 
   jf.updateClass = DF.util.runFixedRate(function (clazz) {
-    new Project.Class(clazz).$update();
-    // project.$update();
-    new LocalProject.Class(clazz).$update(function (resp) {
+    new jf.Project.Class(clazz).$update();
+    new jf.LocalProject.Class(clazz).$update(function (resp) {
       var errors = [];
       if (resp && resp.length) {
         resp.forEach(function (err) {
@@ -102,9 +101,9 @@ Oo.future(function () {
       window.alert('Lib name already exists: ' + name);
       return;
     }
-    var newLib = new Project.Lib({name: name, url: url}).$create(function () {
+    var newLib = new jf.Project.Lib({name: name, url: url}).$create(function () {
       jf.libsMap[newLib.name] = newLib;
-      new LocalProject.Lib(newLib).$create();
+      new jf.LocalProject.Lib(newLib).$create();
     });
   };
 
@@ -120,7 +119,7 @@ Oo.future(function () {
         }
         delete jf.libsMap[name];
       });
-      new LocalProject.Lib(lib).$remove();
+      new jf.LocalProject.Lib(lib).$remove();
     }
   };
 
@@ -186,15 +185,15 @@ Oo.future(function () {
   CodeMirror.keyMap.default[(mac ? 'Cmd' : 'Ctrl') + '-Space'] = 'autocomplete';
 
   javaEditor.on('change', function () {
-    jf.selClass.src = javaEditor.getValue();
-    jf.updateClass(jf.selClass);
+    jf.currClassNode.ref.src = javaEditor.getValue();
+    jf.updateClass(jf.currClassNode.ref);
   });
 
   jf.selectClass = function () {
-    if (jf.selClass) {
+    if (jf.currClassNode) {
       javaEditor.setOption('readOnly', false);
-      jf.updateClass(jf.selClass);
-      javaEditor.setValue(jf.selClass.src || '\r\n');
+      jf.updateClass(jf.currClassNode.ref);
+      javaEditor.setValue(jf.currClassNode.ref.src || '\r\n');
       javaEditor.clearHistory();
     }
   };
