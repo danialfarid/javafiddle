@@ -1,37 +1,42 @@
 <script type="html/template" id="file_tree_item">
-  <div class="tree-pkg">
-    <span text.="pkg.name" tabindex="0"
-          ondblclick.="jf.startRename(pkg)" show.="!pkg.rename"></span>
+  <div class="row tree-pkg" tabindex="0">
+    <i class="fa fa-caret-right" show.="!pkg.expand" onclick.="pkg.expand = true"></i>
+    <i class="fa fa-caret-down" show.="pkg.expand" onclick.="pkg.expand = false"></i>
+    <span tabindex="-1" class="no-select" text.="pkg.name" tabindex="0" onkeydown-right.="pkg.expand = true" onkeydown-left.="pkg.expand = false"
+          ondblclick.="tree.startRename(pkg)" show.="!pkg.rename"></span>
     <input type="text" bind.="pkg.newName" if.="pkg.rename"
-           watch.="pkg.rename: jf.focus(this)"
-           onblur.onkeydown-enter.="jf.renamePackage(pkg, pkg.newName);" onfocus.="this.select()">
+           watch.="pkg.rename: tree.focus(this)"
+           onblur.onkeydown-enter.="tree.renamePackage(pkg, pkg.newName);" onfocus.="this.select()">
     <div class="gadget">
-      <a class="addPkg" tabindex="0" onaction.="jf.addPackage(pkg, 'untitled')">+</a>
-      <a class="add" tabindex="0" onaction.="jf.addClass(pkg)">+</a>
-      <a class="remove" tabindex="0" onaction.="jf.removePackage(pkg.ref)">&#215</a>
+      <a class="addPkg" tabindex="0" onaction.="tree.addPackage(pkg, 'untitled')">+</a>
+      <a class="add" tabindex="0" onaction.="tree.addClass(pkg)">+</a>
+      <a class="remove" tabindex="0" onaction.="tree.removePackage(pkg.ref)">&#215</a>
     </div>
   </div>
-  <ul>
-    <li for.="pkg: pkg.packages" view.="'file_tree_item'"></li>
-  </ul>
-  <ul>
-    <li for.="classNode: pkg.classes" class.="classNode==jf.currClassNode ? 'selected' : ''"
-        onaction.="jf.currClassNode=classNode" tabindex="0" ondblclick.="jf.startRename(classNode)">
-      <span text.="classNode.name" show.="!classNode.rename"></span>
-      <input type="text" bind.="classNode.newName" if.="classNode.rename"
-             watch.="classNode.rename: jf.focus(this)"
-             onblur.onkeydown-enter.="jf.renameClass(classNode);" onfocus.="this.select()">
-      <a class="remove" onaction.="jf.removeClass(classNode)" tabindex="0">&#215</a>
-    </li>
-  </ul>
+  <div show.="pkg.expand">
+    <ul>
+      <li for.="pkg: pkg.packages" view.="'file_tree_item'" class="pkg"></li>
+    </ul>
+    <ul>
+      <li for.="classNode: pkg.classes" class.="classNode==tree.currClassNode ? 'selected' : ''"
+          class="row clazz"
+          onaction.="tree.currClassNode=classNode" tabindex="0" ondblclick.="tree.startRename(classNode)">
+        <span class="no-select" text.="classNode.name" show.="!classNode.rename"></span>
+        <input type="text" bind.="classNode.newName" if.="classNode.rename"
+               watch.="classNode.rename: tree.focus(this)"
+               onblur.onkeydown-enter.="tree.renameClass(classNode);" onfocus.="this.select()">
+        <a class="remove" onaction.="tree.removeClass(classNode)" tabindex="0">&#215</a>
+      </li>
+    </ul>
+  </div>
 </script>
 
-<div class="class-sec">
+<div class="file-tree" onkeydown-down-up="focusNext()" model.="tree: project.fileTree">
   <div class="search">
     <label>
       <input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">
     </label>
     <button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>
   </div>
-  <div view.="'file_tree_item'" model.="pkg: .fileTree"></div>
+  <div view.="'file_tree_item'" model.="pkg: .tree"></div>
 </div>

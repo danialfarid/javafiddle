@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <title text.="messages.title"></title>
-  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/css/font-awesome.css">
   <link rel="stylesheet" href="../bower_components/codemirror/lib/codemirror.css">
   <link rel="stylesheet" href="../bower_components/codemirror/addon/hint/show-hint.css">
   <link rel="stylesheet" href="../bower_components/codemirror/addon/lint/lint.css">
   <link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="styles/main.css">
 </head>
-<body>
-<div data-model.="jf">
+<body model.="messages: jf.messages">
+<div data-model.="project: jf.project">
   <div class="notif" data-text.=".messages"></div>
   <div class="header">
     <div class="top-panel">
@@ -43,11 +44,11 @@
         </div>
       </div>
       <ul class="libs">
-        <li data-for.="lib: .project.libs">
+        <li data-for.="lib: .libs">
           <div data-text.="lib.name" data-title.="lib.url"></div>
           <span data-text.="'#latest: (' + lib.version + ')'"></span>
 
-          <div class="button" data-onaction.="jf.removeLib(lib.name)" tabindex="0">X</div>
+          <div class="button" data-onaction.=".removeLib(lib.name)" tabindex="0">X</div>
         </li>
       </ul>
     </div>
@@ -66,7 +67,7 @@
 <script src="cheetajs/cheetajs.js"></script>
 <script src="scripts/messages.js"></script>
 <script src="scripts/filetree.js"></script>
-<script src="scripts/main.js"></script>
+<script src="scripts/project.js"></script>
 <script src="scripts/util.js"></script>
 <script src="../bower_components/codemirror/lib/codemirror.js"></script>
 <script src="../bower_components/codemirror/addon/edit/matchbrackets.js"></script>

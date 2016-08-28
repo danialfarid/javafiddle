@@ -46,16 +46,12 @@ module.exports = function (grunt) {
         files: ['../../cheetajs/dist/cheetajs.js'],
         tasks: ['copy:external', 'jshint']
       },
-      //jstest: {
-      //  files: ['test/spec/{,*/}*.js'],
-      //  tasks: ['test:watch']
-      //},
       gruntfile: {
         files: ['Gruntfile.js']
       },
       styles: {
-        files: ['<%= config.app %>/styles/{,*/}*.css'],
-        tasks: ['newer:copy:styles', 'autoprefixer']
+        files: ['<%= config.app %>/styles/{,*/}*.scss'],
+        tasks: ['sass:compile']
       },
       livereload: {
         options: {
@@ -63,7 +59,7 @@ module.exports = function (grunt) {
         },
         files: [
           '<%= config.app %>/{,*/}*.html',
-          '.tmp/styles/{,*/}*.css',
+          '<%= config.app %>/styles/{,*/}*.css',
           '<%= config.app %>/images/{,*/}*',
           '../../cheetajs/dist/cheetajs.js'
         ]
@@ -81,9 +77,9 @@ module.exports = function (grunt) {
       },
       livereload: {
         options: {
-          middleware: function(connect) {
+          middleware: function (connect) {
             return [
-              connect.static('.tmp'),
+              connect.static('<%= config.app %>'),
               connect().use('/cheetajs', connect.static('../../cheetajs/dist')),
               connect().use('/bower_components', connect.static('./bower_components')),
               connect.static(config.app)
@@ -97,7 +93,6 @@ module.exports = function (grunt) {
       //    port: 9011,
       //    middleware: function(connect) {
       //      return [
-      //        connect.static('.tmp'),
       //        connect.static('test'),
       //        connect().use('/bower_components', connect.static('./bower_components')),
       //        connect.static(config.app)
@@ -140,31 +135,6 @@ module.exports = function (grunt) {
         '!<%= config.app %>/scripts/vendor/*',
         'test/spec/{,*/}*.js'
       ]
-    },
-
-    // Mocha testing framework configuration options
-    //mocha: {
-    //  all: {
-    //    options: {
-    //      run: true,
-    //      urls: ['http://<%= connect.test.options.hostname %>:<%= connect.test.options.port %>/index.html']
-    //    }
-    //  }
-    //},
-
-    // Add vendor prefixed styles
-    autoprefixer: {
-      options: {
-        browsers: ['> 1%', 'last 2 versions', 'Firefox ESR', 'Opera 12.1']
-      },
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '.tmp/styles/',
-          src: '{,*/}*.css',
-          dest: '.tmp/styles/'
-        }]
-      }
     },
 
     // Automatically inject Bower components into the HTML file
@@ -265,31 +235,18 @@ module.exports = function (grunt) {
       }
     },
 
-    // By default, your `index.html`'s <!-- Usemin block --> will take care
-    // of minification. These next options are pre-configured if you do not
-    // wish to use the Usemin blocks.
-     cssmin: {
-       dist: {
-         files: {
-           '<%= config.dist %>/styles/main.css': [
-             '.tmp/styles/{,*/}*.css',
-             '<%= config.app %>/styles/{,*/}*.css'
-           ]
-         }
-       }
-     },
-     uglify: {
-       dist: {
-         files: {
-           '<%= config.dist %>/scripts/scripts.js': [
-             '<%= config.dist %>/scripts/scripts.js'
-           ]
-         }
-       }
-     },
-     concat: {
-       dist: {}
-     },
+    uglify: {
+      dist: {
+        files: {
+          '<%= config.dist %>/scripts/scripts.js': [
+            '<%= config.dist %>/scripts/scripts.js'
+          ]
+        }
+      }
+    },
+    concat: {
+      dist: {}
+    },
 
     // Copies remaining files to places other tasks can use
     copy: {
@@ -307,18 +264,11 @@ module.exports = function (grunt) {
           ]
         }
           //,
-        //  {
-        //  src: 'node_modules/apache-server-configs/dist/.htaccess',
-        //  dest: '<%= config.dist %>/.htaccess'
-        //}
+          //  {
+          //  src: 'node_modules/apache-server-configs/dist/.htaccess',
+          //  dest: '<%= config.dist %>/.htaccess'
+          //}
         ]
-      },
-      styles: {
-        expand: true,
-        dot: true,
-        cwd: '<%= config.app %>/styles',
-        dest: '.tmp/styles/',
-        src: '{,*/}*.css'
       },
       external: {
         expand: true,
@@ -352,17 +302,18 @@ module.exports = function (grunt) {
 
     // Run some tasks in parallel to speed up build process
     concurrent: {
-      server: [
-        'copy:styles'
-      ],
-      //test: [
-      //  'copy:styles'
-      //],
+      server: ['sass:compile'],
       dist: [
-        'copy:styles',
         'imagemin',
         'svgmin'
       ]
+    },
+    sass: {
+      compile: {
+        files: {
+          '<%= config.app %>/styles/main.css': '<%= config.app %>/styles/main.scss'
+        }
+      }
     }
   });
 
@@ -379,7 +330,6 @@ module.exports = function (grunt) {
       'clean:server',
       'wiredep',
       'concurrent:server',
-      'autoprefixer',
       'connect:livereload',
       'watch'
     ]);
@@ -395,7 +345,6 @@ module.exports = function (grunt) {
   //    grunt.task.run([
   //      'clean:server',
   //      'concurrent:test',
-  //      'autoprefixer'
   //    ]);
   //  }
   //
@@ -415,9 +364,7 @@ module.exports = function (grunt) {
     'wiredep',
     'useminPrepare',
     'concurrent:dist',
-    'autoprefixer',
     'concat',
-    'cssmin',
     'uglify',
     'copy:dist',
     'copy:external',
