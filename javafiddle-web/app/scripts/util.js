@@ -22,7 +22,7 @@ window.DF = {
         if (lastUpdate > 0) {
           fn.apply(_this, lastArgs);
         }
-        prevOnbeforeupload();
+        if (prevOnbeforeupload) prevOnbeforeupload();
       };
       return runFn;
     }

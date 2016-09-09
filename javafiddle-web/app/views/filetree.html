@@ -1,42 +1,46 @@
 <script type="html/template" id="file_tree_item">
-  <div class="row tree-pkg" tabindex="0">
-    <i class="fa fa-caret-right" show.="!pkg.expand" onclick.="pkg.expand = true"></i>
-    <i class="fa fa-caret-down" show.="pkg.expand" onclick.="pkg.expand = false"></i>
-    <span tabindex="-1" class="no-select" text.="pkg.name" tabindex="0" onkeydown-right.="pkg.expand = true" onkeydown-left.="pkg.expand = false"
-          ondblclick.="tree.startRename(pkg)" show.="!pkg.rename"></span>
-    <input type="text" bind.="pkg.newName" if.="pkg.rename"
-           watch.="pkg.rename: tree.focus(this)"
-           onblur.onkeydown-enter.="tree.renamePackage(pkg, pkg.newName);" onfocus.="this.select()">
-    <div class="gadget">
-      <a class="addPkg" tabindex="0" onaction.="tree.addPackage(pkg, 'untitled')">+</a>
-      <a class="add" tabindex="0" onaction.="tree.addClass(pkg)">+</a>
-      <a class="remove" tabindex="0" onaction.="tree.removePackage(pkg.ref)">&#215</a>
+  <div class="row tree-pkg" tabindex="0"
+       onkeydown-right.=".expand = true;" onkeydown-left.=".expand = false;" hover.=".hover"
+       class.="node==tree.currNode ? 'selected' : ''" onaction.="tree.selectNode(node)"
+       onkeydown-down.="tree.focusNext();" onkeydown-up.="tree.focusNext(true);">
+    <i class="fa fa-caret-right" show.=".hasChild(.packages, .classes) && !.expand" onclick.=".expand = true"></i>
+    <i class="fa fa-caret-down" show.=".hasChild(.packages, .classes) && .expand" onclick.=".expand = false"></i>
+    <span text.=".name"
+          ondblclick.="tree.startRename(node)" show.="!.rename"></span>
+    <input type="text" bind.=".newName" if.=".rename"
+           watch.="node.rename: tree.focus(this)" onkeyup-esc.="tree.cancelRename(node)"
+           onblur.onkeydown-enter.="tree.renameNode(node, this);" onfocus.="this.select()">
+    <div class="gadget" show.=".hover">
+      <a class="fa fa-folder-o" show.=".classes" onaction.="tree.addPackage(node)"></a>
+      <a class="fa fa-file-code-o" show.=".classes" onaction.="tree.addClass(node)"></a>
+      <a class="remove" onaction.="tree.removePackage(.ref)">&#215</a>
     </div>
   </div>
-  <div show.="pkg.expand">
+  <div show.=".expand">
     <ul>
-      <li for.="pkg: pkg.packages" view.="'file_tree_item'" class="pkg"></li>
+      <li for.="node: node.packages" view.="'file_tree_item'" class="pkg"></li>
+      <li for.="node: node.classes" view.="'file_tree_item'" class="cls"></li>
     </ul>
-    <ul>
-      <li for.="classNode: pkg.classes" class.="classNode==tree.currClassNode ? 'selected' : ''"
-          class="row clazz"
-          onaction.="tree.currClassNode=classNode" tabindex="0" ondblclick.="tree.startRename(classNode)">
-        <span class="no-select" text.="classNode.name" show.="!classNode.rename"></span>
-        <input type="text" bind.="classNode.newName" if.="classNode.rename"
-               watch.="classNode.rename: tree.focus(this)"
-               onblur.onkeydown-enter.="tree.renameClass(classNode);" onfocus.="this.select()">
-        <a class="remove" onaction.="tree.removeClass(classNode)" tabindex="0">&#215</a>
-      </li>
-    </ul>
+    <!--<ul>-->
+      <!--<li for.="classNode: pkg.classes" tabindex="0"-->
+          <!--class="row clazz" class.="classNode==tree.currNode ? 'selected' : ''"-->
+          <!--onaction.="tree.currNode=classNode" ondblclick.="tree.startRename(classNode)">-->
+        <!--<span class="no-select" text.="classNode.name" show.="!classNode.rename"></span>-->
+        <!--<input type="text" bind.="classNode.newName" if.="classNode.rename"-->
+               <!--watch.="classNode.rename: tree.focus(this)"-->
+               <!--onblur.onkeydown-enter.="tree.renameClass(classNode);" onfocus.="this.select()">-->
+        <!--<a class="remove" onaction.="tree.removeClass(classNode)" tabindex="0">&#215</a>-->
+      <!--</li>-->
+    <!--</ul>-->
   </div>
 </script>
 
-<div class="file-tree" onkeydown-down-up="focusNext()" model.="tree: project.fileTree">
-  <div class="search">
-    <label>
-      <input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">
-    </label>
-    <button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>
-  </div>
-  <div view.="'file_tree_item'" model.="pkg: .tree"></div>
+<div class="file-tree" model.="tree: project.fileTree">
+  <!--<div class="search">-->
+    <!--<label>-->
+      <!--<input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">-->
+    <!--</label>-->
+    <!--<button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>-->
+  <!--</div>-->
+  <div view.="'file_tree_item'" model.="node: .tree"></div>
 </div>

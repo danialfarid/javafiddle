@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html model.="jf;messages: jf.messages">
 <head>
   <meta charset="utf-8">
   <title text.="messages.title"></title>
@@ -10,8 +10,8 @@
   <link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body model.="messages: jf.messages">
-<div data-model.="project: jf.project">
+<body>
+<div model.="project: jf.project">
   <div class="notif" data-text.=".messages"></div>
   <div class="header">
     <div class="top-panel">
@@ -55,8 +55,8 @@
   </div>
   <div class="editor">
     <div class="javaEditor"></div>
-              <textarea data-disabled.=".currClassNode ? null : true" style="display: none"
-                        data-watch.=".currClassNode: .selectClass()"></textarea>
+              <textarea data-disabled.=".currClass ? null : true" style="display: none"
+                        data-watch.=".currClass: .selectClass()"></textarea>
   </div>
   <label><input type="checkbox" data-bind.=".preserveLog">Preserve Log</label>
 
@@ -79,6 +79,7 @@
 <!-- build:dev() dev.js -->
 <script>
   window.jfApiUrl = 'http://localhost:8080/r/p/';
+  Oo.debug = true;
 </script>
 <!-- endbuild -->
 

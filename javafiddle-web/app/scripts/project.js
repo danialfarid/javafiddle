@@ -1,40 +1,50 @@
 'use strict';
+/** @namespace FileTree */
+/** @namespace Oo */
 
 Oo.future(function () {
   var apiBase = (window.jfApiUrl || '/');
 
   class Project extends Oo.ServerObject(apiBase + '{:id}') {
-    constructor() {
-      super();
-      this.fileTree = null;
+    constructor(p) {
+      super(p);
       this.init();
+    }
+    createProject() {
+      var project = this;
+      project = this.$create(function () {
+        // jf.localProject = new jf.LocalProject(jf.project).$create();
+        //window.history.pushState(null, null, '/' + jf.project.id);
+        Oo.hash.set(project.id);
+        project.init();
+      });
     }
 
     init() {
       this.id = Oo.hash.get() || null;
-      if (this.id != null) {
-        this.$get(function () {
+      var project = this;
+      if (project.id != null) {
+        project.$get(function () {
           // jf.localProject = new jf.LocalProject(jf.project).$create();
-          Project.Class = class extends Oo.ServerObject(apiBase + this.id + '/class') {
-            constructor(name) {
-              super();
-              this.name = name;
-            }
-          };
-          this.fileTree = new FileTree(this);
+          Project.Class = class extends Oo.ServerObject(apiBase + project.id + '/class') {};
+          project.classes = project.classes.map((c) => {
+            return new Project.Class(c);
+          });
+          this.fileTree.init();
         }, function () {
-          this.createProject();
+          project.createProject();
         });
       } else {
-        this.createProject();
+        project.createProject();
       }
-      // jf.initializeProject();
+      /*global FileTree */
+      this.fileTree = new FileTree(this);
       // pollLogs();
       this.initEditor();
 
-      this.messages = [];
+      project.alerts = [];
       Oo.http.onError(function (xhr) {
-        this.messages.push(xhr.data);
+        project.alerts.push(xhr.data);
       });
 
       this.updateClass = DF.util.runFixedRate(function (clazz) {
@@ -55,35 +65,33 @@ Oo.future(function () {
       }, 1000, 3000);
     }
 
-    createProject() {
-      this.$create(function () {
-        // jf.localProject = new jf.LocalProject(jf.project).$create();
-        this.init();
-        //window.history.pushState(null, null, '/' + jf.project.id);
-        Oo.hash.set(this.id);
-      });
-    }
-
-    createClass(pkgName) {
-      var newName = 'UntitledClass';
-      pkgName = pkgName.substring(this.project.id.length + 1);
-      var clazz = new Project.Class(pkgName + (pkgName ? '.' : '') + newName).$create(function () {
+    createClass(className, fn) {
+      var fullName = className.substring(this.id.length + 1);
+      var project = this;
+      var clazz = new Project.Class({name: fullName}).$create(function () {
         // jf.classesMap[clazz.name] = clazz;
-        this.project.classes.splice(0, 0, clazz);
+        project.classes.splice(0, 0, clazz);
+        fn(clazz);
         // new jf.LocalProject.Class(clazz).$create();
       });
       return clazz;
     }
 
-    compileValidator(cm, updateLinting, options) {
+    renameClass(clazz, name) {
+      clazz.src = clazz.src.replace(/class +[\w\d]+/, 'class ' + name);
+      clazz.$update();
+      this.selectClass();
+    }
+
+    compileValidator(cm, updateLinting) {
       this.showCompileErrors = updateLinting;
-      //if (cm && cm.length) {
-      //  updateLinting([{
-      //    from: CodeMirror.Pos(2 - 1, 2),
-      //    to: CodeMirror.Pos(2 - 1, 10),
-      //    message: 'aaaa'
-      //  }]);
-      //}
+      if (cm && cm.length) {
+       updateLinting([{
+         from: CodeMirror.Pos(2 - 1, 2),
+         to: CodeMirror.Pos(2 - 1, 10),
+         message: 'aaaa'
+       }]);
+      }
     }
 
     initEditor() {
@@ -94,11 +102,11 @@ Oo.future(function () {
         matchBrackets: true,
         styleActiveLine: true,
         lineWrapping: false,
-        gutters: ["CodeMirror-lint-markers"],
+        gutters: ['CodeMirror-lint-markers'],
         mode: 'text/x-java',
         lint: {
-          "getAnnotations": Project.compileValidator,
-          "async": true
+          'getAnnotations': Project.compileValidator,
+          'async': true
         },
         //after selection readonly will be reset
         readOnly: true
@@ -106,23 +114,27 @@ Oo.future(function () {
       var mac = CodeMirror.keyMap.default === CodeMirror.keyMap.macDefault;
       CodeMirror.keyMap.default[(mac ? 'Cmd' : 'Ctrl') + '-Space'] = 'autocomplete';
 
+      var project = this;
       this.javaEditor.on('change', function () {
-        this.currClass.src = this.javaEditor.getValue();
-        this.updateClass(jf.currClass);
+        project.currClass.src = project.javaEditor.getValue();
+        project.updateClass(project.currClass);
       });
     }
 
-    selectClass() {
+    selectClass(c) {
+      if (c) {
+        this.currClass = c;
+      }
       if (this.currClass) {
         this.javaEditor.setOption('readOnly', false);
-        this.updateClass(this.currClass);
+        // this.updateClass(this.currClass);
         this.javaEditor.setValue(this.currClass.src || '\r\n');
         this.javaEditor.clearHistory();
       }
     }
   }
 
-  window.jf.project = new Project();
+  M.jf.project = new Project();
 });
 // Oo.future(function () {
 //

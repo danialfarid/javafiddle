@@ -27,21 +27,6 @@ body {
   background-color: #2b81af;
 }
 
-.tree-pkg .gadget {
-  display: none;
-  color: white;
-  position: absolute;
-  right: 5px;
-}
-
-.tree-pkg:hover .gadget {
-  display: inline-block;
-}
-
-.tree-pkg .gadget a {
-  margin: 2px;
-}
-
 .class-sec ul li:hover .remove {
   right: 5px;
 }
@@ -105,7 +90,7 @@ a {
 }
 
 .fa-caret-right {
-  transform: scale(1.5, 1);
+  transform: scale(1.3, .9);
 }
 
 .no-select {
@@ -113,17 +98,31 @@ a {
 }
 
 .file-tree {
-  .row:active, .row:focus {
-    background: $file-tree-selected-bg;
-  }
   .row {
     outline: none;
     width: 100%;
+    position: relative;
+    &.selected {
+      background: $file-tree-selected-bg;
+    }
+    cursor: default;
   }
   ul {
     list-style: none;
-    padding: 0;
+    padding-left: 15px;
     margin: 0;
+  }
+  .gadget {
+    display: inline-block;
+    color: white;
+    position: absolute;
+    right: 5px;
+    a {
+      margin: 2px;
+    }
+  }
+  .pkg>.row>span {
+    font-size: smaller;
   }
 }
 

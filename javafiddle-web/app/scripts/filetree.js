@@ -12,8 +12,6 @@ class FileTree {
         this.parent = parent;
         this.rename = rename;
         this.newName = newName;
-        this.classes = [];
-        this.packages = [];
       }
 
       fullName() {
@@ -26,14 +24,30 @@ class FileTree {
         return name;
       }
     };
-    this.init();
+
+    FileTree.Class = class extends FileTree.Node {
+      hasChild() {
+        return false;
+      }
+    };
+    FileTree.Package = class extends FileTree.Node {
+      constructor(name, ref, parent, rename, newName) {
+        super(name, ref, parent, rename, newName);
+        this.classes = [];
+        this.packages = [];
+      }
+
+      hasChild() {
+        return (this.classes && this.classes.length > 0) || (this.packages && this.packages.length > 0);
+      }
+    };
   }
 
   init() {
-    this.tree = new FileTree.Node(this.project.id, this.project);
-    for (var i = 0; i < this.project.classes.length;i++) {
+    this.tree = new FileTree.Package(this.project.id, this.project);
+    for (var i = 0; i < this.project.classes.length; i++) {
       var c = this.project.classes[i];
-      this.tree.classes.push(new FileTree.Node(c.name, c, this.tree));
+      this.tree.classes.push(new FileTree.Class(c.name, c, this.tree));
     }
     this.sortAndMakeChildren(this.tree);
   }
@@ -46,7 +60,7 @@ class FileTree {
     node.packages = [];
     node.classes.sort(this.nameSort);
 
-    var findSubPackage = function(subpkg) {
+    var findSubPackage = function (subpkg) {
       return function (el) {
         return el.name === subpkg;
       };
@@ -61,19 +75,36 @@ class FileTree {
         subpkg += (subpkg ? '.' : '') + split[j];
         var pkgNode = node.packages.find(findSubPackage(subpkg));
         if (!pkgNode && j === split.length - 2) {
-          pkgNode = new FileTree.Node(subpkg, null, node);
+          pkgNode = new FileTree.Package(subpkg, null, node);
           node.packages.push(pkgNode);
         }
         if (pkgNode) {
           node.classes.splice(i--, 1);
-          pkgNode.classes.push(new FileTree.Node(c.name.substring(subpkg.length + 1), c.ref, pkgNode));
+          pkgNode.classes.push(new FileTree.Class(c.name.substring(subpkg.length + 1), c.ref, pkgNode));
           break;
         }
       }
     }
-    node.packages.forEach(function (p) {
-      this.sortAndMakeChildren(p);
-    });
+    for (var k = 0; k < node.packages.length; k++) {
+      this.sortAndMakeChildren(node.packages[k]);
+    }
+  }
+
+  selectNode(node) {
+    this.currNode = node;
+    if (this.currNode instanceof FileTree.Class) {
+      this.project.selectClass(node.ref);
+    }
+  }
+
+  addClass(pkgNode) {
+    pkgNode.expand = true;
+    pkgNode.classes.unshift(new FileTree.Class('', null, pkgNode, true, ''));
+  }
+
+  addPackage(pkgNode) {
+    pkgNode.expand = true;
+    pkgNode.packages.unshift(new FileTree.Package('', null, pkgNode, true, ''));
   }
 
   startRename(node) {
@@ -81,24 +112,37 @@ class FileTree {
     node.rename = true;
   }
 
-  addPackage(pkgNode) {
-    var pkgName = 'untitled' + Math.floor(Math.random() * 10000);
-    pkgNode.packages = pkgNode.packages || [];
-    pkgNode.packages.push(new FileTree.Node(pkgName, null, pkgNode, true, pkgName));
-    pkgNode.packages.sort(this.nameSort);
+  renameNode(node, elem) {
+    if (!node.newName) {
+      return this.cancelRename(node);
+    }
+    if (this.nameExists(node.newName, node)) {
+      this.project.alerts.push('Name already exists');
+      setTimeout(function(){elem.focus()}, 0);
+    } else {
+      if (node instanceof FileTree.Package) {
+        this.renamePackage(node);
+      } else {
+        this.renameClass(node);
+      }
+    }
   }
 
-  renamePackage(pkgNode, newName) {
+  renamePackage(pkgNode) {
+    if (!pkgNode.hasChild() && !pkgNode.newName) {
+      return this.cancelRename(pkgNode);
+    }
     var oldName = pkgNode.fullName();
-    pkgNode.name = newName;
-    newName = pkgNode.fullName();
+    pkgNode.name = pkgNode.newName;
+    var newName = pkgNode.fullName();
     this.renamePackageInClasses(pkgNode, oldName, newName);
     pkgNode.rename = false;
-    pkgNode.packages.sort(this.nameSort);
+    setTimeout(() => {pkgNode.parent.packages.sort(this.nameSort);}, 0);
   }
 
   renamePackageInClasses(pkgNode, oldName, newName) {
-    pkgNode.classes.forEach(function (c) {
+    for (var i = 0; i < pkgNode.classes.length; i++) {
+      var c = pkgNode.classes[i];
       c.ref.name = c.ref.name.replace(oldName.substring(this.project.id.length + 1),
         newName.substring(this.project.id.length + 1));
       c.ref.src = c.ref.src.replace(oldName, newName);
@@ -106,30 +150,39 @@ class FileTree {
       if (c === this.currClassNode) {
         this.project.selectClass();
       }
-    });
-    pkgNode.packages.forEach(function (p) {
+    };
+    for (var j = 0; j < pkgNode.packages.length; j++) {
+      var p = pkgNode.packages[j];
       this.renamePackageInClasses(p, oldName + '.' + p.name, newName + '.' + p.name);
-    });
-  }
-
-  addClass(pkgNode) {
-    var fullName = pkgNode.fullName();
-    var clazz = project.createClass(fullName, function() {
-      var newName = clazz.name.substring(fullName.length + 1);
-      var node = new FileTree.Node(newName, clazz, pkgNode, true, newName);
-      pkgNode.classes.push(node);
-    });
+    }
   }
 
   renameClass(clazzNode) {
     clazzNode.name = clazzNode.newName;
     var newName = clazzNode.fullName();
-    clazzNode.ref.name = newName.substring(this.project.id.length + 1);
-    clazzNode.ref.src = clazzNode.ref.src.replace(/class +[\w\d]+/, 'class ' + clazzNode.name);
-    jf.updateClass(clazzNode.ref);
+    var project = this.project;
+    if (!clazzNode.ref) {
+      if (!clazzNode.newName) {
+        return this.cancelRename(clazzNode);
+      } else {
+        project.createClass(newName, function (clazz) {
+          clazzNode.ref = clazz;
+        });
+      }
+    } else {
+      clazzNode.ref.name = newName.substring(this.project.id.length + 1);
+      this.project.renameClass(clazzNode.ref, clazzNode.name);
+    }
     clazzNode.rename = false;
-    jf.selectClass();
-    clazzNode.parent.classes.sort(nameSort);
+    setTimeout(() => {clazzNode.parent.classes.sort(this.nameSort);}, 0);
+  }
+
+  cancelRename(node) {
+    node.rename = false;
+    if (!node.ref && !node.hasChild()) {
+      node.parent.classes.remove(node);
+      node.parent.packages.remove(node);
+    }
   }
 
   focus(el) {
@@ -138,7 +191,41 @@ class FileTree {
     }, 0);
   }
 
-  focusNext() {
-    e.currentTarget.parentNode.nextElementSibling.querySelector('tr').focus();
+  focusNext(reverse) {
+    var elem = this.findNextVisible(reverse);
+    if (elem) {
+      elem.click();
+    }
+  }
+
+  findNextVisible(reverse) {
+    var allRows = Array.prototype.slice.call(document.querySelector('.file-tree').querySelectorAll('.row'));
+    if (reverse) {
+      allRows = allRows.reverse();
+    }
+    var len = allRows.length, prevVisible;
+    while(len--) {
+      if (allRows[len].offsetWidth) {
+        if (allRows[len].hasClass('selected')) {
+          return prevVisible;
+        }
+        prevVisible = allRows[len];
+      }
+    }
+  }
+
+  nameExists(name, node) {
+    for (var i = 0; i < node.parent.classes.length; i++) {
+      var c = node.parent.classes[i];
+      if (c !== node && c.name === name) {
+        return true;
+      }
+    }
+    for (var j = 0; j < node.parent.packages.length; j++) {
+      var p = node.parent.packages[j];
+      if (p !== node && p.name === name) {
+        return true;
+      }
+    }
   }
 }
