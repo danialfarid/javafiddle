@@ -1,4 +1,13 @@
-<script type="html/template" id="file_tree_item">
+<div class="file-tree">
+  <!--<div class="search">-->
+  <!--<label>-->
+  <!--<input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">-->
+  <!--</label>-->
+  <!--<button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>-->
+  <!--</div>-->
+  <jf.file-tree.node view.="'Jf.FileTree.Node'" model.="node: .root"></jf.file-tree.node>
+</div>
+<script type="html/template" id="Jf.FileTree.Node">
   <div class="row tree-pkg" tabindex="0"
        onkeydown-right.=".expand = true;" onkeydown-left.=".expand = false;" hover.=".hover"
        class.="node==tree.currNode ? 'selected' : ''" onaction.="tree.selectNode(node)"
@@ -18,29 +27,8 @@
   </div>
   <div show.=".expand">
     <ul>
-      <li for.="node: node.packages" view.="'file_tree_item'" class="pkg"></li>
-      <li for.="node: node.classes" view.="'file_tree_item'" class="cls"></li>
+      <li for.="node: node.packages" view.="'Jf.FileTree.Node'" class="pkg"></li>
+      <li for.="node: node.classes" view.="'Jf.FileTree.Node'" class="cls"></li>
     </ul>
-    <!--<ul>-->
-      <!--<li for.="classNode: pkg.classes" tabindex="0"-->
-          <!--class="row clazz" class.="classNode==tree.currNode ? 'selected' : ''"-->
-          <!--onaction.="tree.currNode=classNode" ondblclick.="tree.startRename(classNode)">-->
-        <!--<span class="no-select" text.="classNode.name" show.="!classNode.rename"></span>-->
-        <!--<input type="text" bind.="classNode.newName" if.="classNode.rename"-->
-               <!--watch.="classNode.rename: tree.focus(this)"-->
-               <!--onblur.onkeydown-enter.="tree.renameClass(classNode);" onfocus.="this.select()">-->
-        <!--<a class="remove" onaction.="tree.removeClass(classNode)" tabindex="0">&#215</a>-->
-      <!--</li>-->
-    <!--</ul>-->
   </div>
 </script>
-
-<div class="file-tree" model.="tree: project.fileTree">
-  <!--<div class="search">-->
-    <!--<label>-->
-      <!--<input type="text" bind.=".newClassName" onkeydown-enter.=".addClass(.newClassName);">-->
-    <!--</label>-->
-    <!--<button onaction.=".addClass(.newClassName);" tabindex="0">Create</button>-->
-  <!--</div>-->
-  <div view.="'file_tree_item'" model.="node: .tree"></div>
-</div>

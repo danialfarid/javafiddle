@@ -11,9 +11,6 @@
 module.exports = function (grunt) {
   grunt.option('color', false);
 
-  // Time how long tasks take. Can help when optimizing build times
-  require('time-grunt')(grunt);
-
   // Load grunt tasks automatically
   require('load-grunt-tasks')(grunt);
 
