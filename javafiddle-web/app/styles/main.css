@@ -1,9 +1,51 @@
 * {
   outline-width: 1px; }
 
-body {
-  min-width: 1200px;
+html body {
   font-family: 'Lato', sans-serif; }
+
+html, body, .jf {
+  height: 100%;
+  padding: 0;
+  margin: 0; }
+
+.top, .bottom, .middle {
+  width: 98.8%;
+  float: left; }
+
+.top {
+  height: 20%;
+  padding: 0 .6%; }
+
+.bottom {
+  height: 20%;
+  padding: 0 .6%; }
+
+.middle {
+  padding: 0 .6%;
+  height: 56%;
+  width: 97%; }
+  .middle .side-panel, .middle .editor, .middle .javaEditor {
+    height: 100%;
+    overflow: auto; }
+  .middle .javaEditor .CodeMirror {
+    height: 100%;
+    width: 100%; }
+
+.side-panel {
+  float: left;
+  overflow: auto;
+  height: 100%;
+  vertical-align: top;
+  width: 26%; }
+
+.editor {
+  vertical-align: top;
+  border: 1px solid #DDDDDD;
+  width: 73%; }
+
+.top-panel {
+  float: right; }
 
 .header h2 {
   color: #2b81af; }
@@ -21,21 +63,6 @@ body {
 
 .class-sec ul li:hover .remove {
   right: 5px; }
-
-.side-panel {
-  display: table-cell;
-  vertical-align: top;
-  overflow-y: auto;
-  min-width: 400px; }
-
-.editor {
-  display: table-cell;
-  vertical-align: top;
-  border: 1px solid #DDDDDD;
-  width: 100%; }
-
-.top-panel {
-  float: right; }
 
 .run {
   padding: 10px 25px;

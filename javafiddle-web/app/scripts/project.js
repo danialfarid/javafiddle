@@ -1,141 +1,77 @@
 'use strict';
-/** @namespace FileTree */
-/** @namespace Oo */
-
-Oo.future(function () {
-  var apiBase = (window.jfApiUrl || '/');
-
-  class Project extends Oo.ServerObject(apiBase + '{:id}') {
-    constructor(p) {
-      super(p);
-      this.init();
-    }
-    createProject() {
-      var project = this;
-      project = this.$create(function () {
-        // jf.localProject = new jf.LocalProject(jf.project).$create();
-        //window.history.pushState(null, null, '/' + jf.project.id);
-        Oo.hash.set(project.id);
-        project.init();
-      });
-    }
-
-    init() {
-      this.id = Oo.hash.get() || null;
-      var project = this;
-      if (project.id != null) {
-        project.$get(function () {
-          // jf.localProject = new jf.LocalProject(jf.project).$create();
-          Project.Class = class extends Oo.ServerObject(apiBase + project.id + '/class') {};
-          project.classes = project.classes.map((c) => {
-            return new Project.Class(c);
-          });
-          this.fileTree.init();
-        }, function () {
-          project.createProject();
-        });
-      } else {
-        project.createProject();
-      }
-      /*global FileTree */
-      this.fileTree = new FileTree(this);
-      // pollLogs();
-      this.initEditor();
-
-      project.alerts = [];
-      Oo.http.onError(function (xhr) {
-        project.alerts.push(xhr.data);
-      });
-
-      this.updateClass = DF.util.runFixedRate(function (clazz) {
-        clazz.$update();
-        // new jf.LocalProject.Class(clazz).$update(function (resp) {
-        //   var errors = [];
-        //   if (resp && resp.length) {
-        //     resp.forEach(function (err) {
-        //       errors.push({
-        //         from: CodeMirror.Pos(err.line - 1, err.from),
-        //         to: CodeMirror.Pos(err.line - 1, err.to + 1),
-        //         message: err.reason
-        //       });
-        //     })
-        //   }
-        //   if (jf.showCompileErrors) jf.showCompileErrors(errors);
-        // });
-      }, 1000, 3000);
-    }
-
-    createClass(className, fn) {
-      var fullName = className.substring(this.id.length + 1);
-      var project = this;
-      var clazz = new Project.Class({name: fullName}).$create(function () {
-        // jf.classesMap[clazz.name] = clazz;
-        project.classes.splice(0, 0, clazz);
-        fn(clazz);
-        // new jf.LocalProject.Class(clazz).$create();
-      });
-      return clazz;
-    }
-
-    renameClass(clazz, name) {
-      clazz.src = clazz.src.replace(/class +[\w\d]+/, 'class ' + name);
-      clazz.$update();
-      this.selectClass();
-    }
-
-    compileValidator(cm, updateLinting) {
-      this.showCompileErrors = updateLinting;
-      if (cm && cm.length) {
-       updateLinting([{
-         from: CodeMirror.Pos(2 - 1, 2),
-         to: CodeMirror.Pos(2 - 1, 10),
-         message: 'aaaa'
-       }]);
-      }
-    }
-
-    initEditor() {
-      this.editorElem = document.getElementsByClassName('javaEditor')[0];
-      this.javaEditor = new CodeMirror(this.editorElem, {
-        lineNumbers: true,
-        indentUnit: 4,
-        matchBrackets: true,
-        styleActiveLine: true,
-        lineWrapping: false,
-        gutters: ['CodeMirror-lint-markers'],
-        mode: 'text/x-java',
-        lint: {
-          'getAnnotations': Project.compileValidator,
-          'async': true
-        },
-        //after selection readonly will be reset
-        readOnly: true
-      });
-      var mac = CodeMirror.keyMap.default === CodeMirror.keyMap.macDefault;
-      CodeMirror.keyMap.default[(mac ? 'Cmd' : 'Ctrl') + '-Space'] = 'autocomplete';
-
-      var project = this;
-      this.javaEditor.on('change', function () {
-        project.currClass.src = project.javaEditor.getValue();
-        project.updateClass(project.currClass);
-      });
-    }
-
-    selectClass(c) {
-      if (c) {
-        this.currClass = c;
-      }
-      if (this.currClass) {
-        this.javaEditor.setOption('readOnly', false);
-        // this.updateClass(this.currClass);
-        this.javaEditor.setValue(this.currClass.src || '\r\n');
-        this.javaEditor.clearHistory();
-      }
-    }
+Jf.Project = class extends Oo.ServerObject(Jf.apiBase + '{:id}') {
+  constructor() {
+    super({id: Oo.hash.get()});
+    this.init();
   }
 
-  M.jf.project = new Project();
-});
+  createProject() {
+    var project = this;
+    project = this.$create(function () {
+      // jf.localProject = new jf.LocalProject(jf.project).$create();
+      //window.history.pushState(null, null, '/' + jf.project.id);
+      Oo.hash.set(project.id);
+      project.init();
+    });
+  }
+
+  onLoad(callback) {
+    this.onLoadCallback = callback;
+  }
+
+  init() {
+    var project = this;
+    if (this.id) {
+      this.$get(function () {
+        Jf.Project.Class = class extends Oo.ServerObject(Jf.apiBase + project.id + '/class') {};
+        Jf.Project.Lib = class extends Oo.ServerObject(Jf.apiBase + project.id + '/lib') {};
+        // jf.localProject = new jf.LocalProject(jf.project).$create();
+        project.classes = project.classes.map((c) => {
+          return new Jf.Project.Class(c);
+        });
+        project.onLoadCallback();
+      }, function () {
+        project.createProject();
+      });
+    } else {
+      project.createProject();
+    }
+    this.updateClass = DF.util.runFixedRate(function (clazz) {
+      clazz.$update();
+      // new jf.LocalProject.Class(clazz).$update(function (resp) {
+      //   var errors = [];
+      //   if (resp && resp.length) {
+      //     resp.forEach(function (err) {
+      //       errors.push({
+      //         from: CodeMirror.Pos(err.line - 1, err.from),
+      //         to: CodeMirror.Pos(err.line - 1, err.to + 1),
+      //         message: err.reason
+      //       });
+      //     })
+      //   }
+      //   if (jf.showCompileErrors) jf.showCompileErrors(errors);
+      // });
+    }, 1000, 3000);
+  }
+
+  createClass(className, fn) {
+    var fullName = className.substring(this.id.length + 1);
+    var project = this;
+    var clazz = new Jf.Project.Class({name: fullName}).$create(function () {
+      // jf.classesMap[clazz.name] = clazz;
+      project.classes.splice(0, 0, clazz);
+      fn(clazz);
+      // new jf.LocalProject.Class(clazz).$create();
+    });
+    return clazz;
+  }
+
+  renameClass(clazz, name) {
+    clazz.src = clazz.src.replace(/class +[\w\d]+/, 'class ' + name);
+    clazz.$update();
+  }
+};
+
 // Oo.future(function () {
 //
 //   var jf = M.jf;

@@ -1,0 +1,58 @@
+<script type="html/template" id="jf">
+  <section class="top">
+    <div class="notif" data-text.=".alerts"></div>
+    <div class="header">
+      <div class="top-panel">
+        <button disabled.="!.clientAlive" class="run" onaction.=".run()">{{messages.run}}
+        </button>
+        <a target="_blank" onclick.=".showDownloadHelp = !.showDownloadHelp" show.="!.clientAlive"
+           href.="messages.downloadLink">{{messages.download}} & {{messages.run}} {{messages.jarName}}</a>
+
+        <div show.="!.clientAlive && .showDownloadHelp" html.="messages.downloadClient"></div>
+      </div>
+      <h2 text.="messages.title"></h2>
+    </div>
+  </section>
+  <section class="middle">
+    <div class="side-panel" resizable.="'right'">
+      <jf.file-tree model.="tree: .fileTree" view.="'views/filetree.html'"></jf.file-tree>
+      <div class="lib-sec">
+        <div class="button" data-onaction.=".showAddLib=true" tabindex="0">+</div>
+        <div class="add-lib" data-show.=".showAddLib" data-init.='.showAddLib = false'
+             data-onkeyup-esc.=".showAddLib=false">
+          <div class="close" data-onaction.=".showAddLib=false" tabindex="0">X</div>
+          <label>
+            <input type="text" name="name" data-bind.=".newLibName" data-focus.=".showAddLib"
+                   data-onkeydown-enter.=".addLib(.newLibName, .newLibUrl);.showAddLib=false">
+          </label>
+          URL:
+          <label>
+            <input type="text" name="url" data-bind.=".newLibUrl" data-init.=".newLibUrl = 'Maven'">
+          </label>
+
+          <div class="button" data-onaction.=".addLib(.newLibName, .newLibUrl);showAddLib=false" tabindex="0">Add
+          </div>
+        </div>
+        <ul class="libs">
+          <li data-for.="lib: .project.libs">
+            <div data-text.="lib.name" data-title.="lib.url"></div>
+            <span data-text.="'#latest: (' + lib.version + ')'"></span>
+
+            <div class="button" data-onaction.=".removeLib(lib.name)" tabindex="0">X</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="editor">
+      <div class="javaEditor"></div>
+      <textarea data-disabled.=".currClass ? null : true" style="display: none"
+                data-watch.=".currClass: .selectClass()"></textarea>
+    </div>
+  </section>
+  <section class="bottom">
+    <label><input type="checkbox" data-bind.=".preserveLog">Preserve Log</label>
+
+    <pre class="out" data-text.=".out"></pre>
+    <pre class="err" data-text.=".err"></pre>
+  </section>
+</script>
