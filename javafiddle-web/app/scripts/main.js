@@ -53,15 +53,38 @@ class Jf {
 
     this.javaEditor.on('change', function () {
       jf.currClass.src = jf.javaEditor.getValue();
-      jf.project.updateClass(jf.currClass);
+      jf.updateSrc(jf.currClass);
     });
+
+    this.updateSrc = DF.util.runFixedRate(function (clazz) {
+      var name = clazz.name.substring(clazz.name.lastIndexOf('.') + 1), newName;
+      // clazz.src.replace(/class +(\w+)/, function(m,p){newName = p;});
+      // if (newName && newName != name) {
+      //   this.fileTree.renameClass()
+      // }
+      clazz.$update();
+      new jf.LocalProject.Class(clazz).$update(function (resp) {
+        var errors = [];
+        if (resp && resp.length) {
+          resp.forEach(function (err) {
+            errors.push({
+              from: CodeMirror.Pos(err.line - 1, err.from),
+              to: CodeMirror.Pos(err.line - 1, err.to + 1),
+              message: err.reason
+            });
+          })
+        }
+        if (jf.showCompileErrors) jf.showCompileErrors(errors);
+      });
+    }, 1000, 3000);
   }
 
-  selectClass(c) {
-    if (c) {
-      this.currClass = c;
-    }
-    if (this.currClass) {
+  setCurrClass(c) {
+    this.showInEditor(this.currClass = c);
+  }
+
+  showInEditor() {
+    if (this.editorElem && !this.editorElem.contains(document.activeElement)) {
       this.javaEditor.setOption('readOnly', false);
       // this.updateClass(this.currClass);
       this.javaEditor.setValue(this.currClass.src || '\r\n');

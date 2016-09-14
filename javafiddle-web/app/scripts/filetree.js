@@ -3,7 +3,7 @@
 Jf.FileTree = class {
   constructor(jf) {
     this.jf = jf;
-    this.currClassNode = null;
+    this.recentStack = [];
   }
 
   init() {
@@ -55,9 +55,13 @@ Jf.FileTree = class {
   }
 
   selectNode(node) {
-    this.currNode = node;
-    if (this.currNode instanceof Jf.FileTree.Class) {
-      this.jf.selectClass(node.ref);
+    if (this.currNode !== node) {
+      this.currNode = node;
+      if (this.currNode instanceof Jf.FileTree.Class) {
+        this.jf.setCurrClass(node.ref);
+        this.recentStack.remove(node);
+        this.recentStack.push(node);
+      }
     }
   }
 
@@ -110,10 +114,7 @@ Jf.FileTree = class {
       c.ref.name = c.ref.name.replace(oldName.substring(this.jf.project.id.length + 1),
         newName.substring(this.jf.project.id.length + 1));
       c.ref.src = c.ref.src.replace(oldName, newName);
-      this.jf.project.updateClass(c.ref);
-      if (c === this.currClassNode) {
-        this.jf.project.selectClass();
-      }
+      this.jf.project.updateSrc(c.ref);
     }
     for (var j = 0; j < pkgNode.packages.length; j++) {
       var p = pkgNode.packages[j];
@@ -136,7 +137,6 @@ Jf.FileTree = class {
     } else {
       clazzNode.ref.name = newName.substring(this.jf.project.id.length + 1);
       this.jf.project.renameClass(clazzNode.ref, clazzNode.name);
-      this.jf.selectClass(clazzNode.ref);
     }
     clazzNode.rename = false;
     setTimeout(() => {clazzNode.parent.classes.sort(this.nameSort);}, 0);

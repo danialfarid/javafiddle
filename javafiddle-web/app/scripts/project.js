@@ -36,22 +36,6 @@ Jf.Project = class extends Oo.ServerObject(Jf.apiBase + '{:id}') {
     } else {
       project.createProject();
     }
-    this.updateClass = DF.util.runFixedRate(function (clazz) {
-      clazz.$update();
-      // new jf.LocalProject.Class(clazz).$update(function (resp) {
-      //   var errors = [];
-      //   if (resp && resp.length) {
-      //     resp.forEach(function (err) {
-      //       errors.push({
-      //         from: CodeMirror.Pos(err.line - 1, err.from),
-      //         to: CodeMirror.Pos(err.line - 1, err.to + 1),
-      //         message: err.reason
-      //       });
-      //     })
-      //   }
-      //   if (jf.showCompileErrors) jf.showCompileErrors(errors);
-      // });
-    }, 1000, 3000);
   }
 
   createClass(className, fn) {
