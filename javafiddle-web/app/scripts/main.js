@@ -57,7 +57,7 @@ class Jf {
     });
 
     this.updateSrc = DF.util.runFixedRate(function (clazz) {
-      var name = clazz.name.substring(clazz.name.lastIndexOf('.') + 1), newName;
+      // var name = clazz.name.substring(clazz.name.lastIndexOf('.') + 1), newName;
       // clazz.src.replace(/class +(\w+)/, function(m,p){newName = p;});
       // if (newName && newName != name) {
       //   this.fileTree.renameClass()
@@ -72,9 +72,11 @@ class Jf {
               to: CodeMirror.Pos(err.line - 1, err.to + 1),
               message: err.reason
             });
-          })
+          });
         }
-        if (jf.showCompileErrors) jf.showCompileErrors(errors);
+        if (jf.showCompileErrors) {
+          jf.showCompileErrors(errors);
+        }
       });
     }, 1000, 3000);
   }
